@@ -1,0 +1,2936 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ÑUHU Resonance — Dragon Sanctuary</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Exo+2:wght@300;400;600;700&family=Space+Grotesk:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --void: #040410;
+  --deep: #07071a;
+  --nebula: #0d0d2b;
+  --violet: #6B4FD8;
+  --violet-bright: #9B79FF;
+  --neon: #C4FF3C;
+  --teal: #00E5D4;
+  --rose: #FF6B9D;
+  --gold: #FFD166;
+  --crystal: #7DD3FC;
+  --white: #F0EEFF;
+  --muted: #8B7FBF;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Exo 2', sans-serif;
+  background: var(--void);
+  color: var(--white);
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+  position: relative;
+}
+
+/* ─── COSMOS BACKGROUND ─── */
+#cosmos {
+  position: fixed; inset: 0; z-index: 0;
+  background: radial-gradient(ellipse at 20% 20%, #1a0a3e 0%, transparent 50%),
+              radial-gradient(ellipse at 80% 80%, #0a1a3e 0%, transparent 50%),
+              radial-gradient(ellipse at 50% 10%, #1a0a2a 0%, transparent 40%),
+              var(--void);
+}
+
+#stars-canvas {
+  position: fixed; inset: 0; z-index: 1; pointer-events: none;
+}
+
+/* ─── INTRO SCREEN ─── */
+#intro {
+  position: fixed; inset: 0; z-index: 100;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  background: radial-gradient(ellipse at center, #0d0030 0%, #000010 60%, #000005 100%);
+  transition: opacity 1s ease;
+}
+
+#intro.fade-out {
+  opacity: 0; pointer-events: none;
+}
+
+.logo-glow {
+  position: relative;
+  animation: logoReveal 2s cubic-bezier(.16,1,.3,1) forwards;
+  opacity: 0;
+}
+
+@keyframes logoReveal {
+  0% { opacity: 0; transform: scale(0.5) rotate(-10deg); filter: blur(20px); }
+  60% { opacity: 1; transform: scale(1.08) rotate(2deg); filter: blur(0); }
+  100% { opacity: 1; transform: scale(1) rotate(0deg); filter: blur(0); }
+}
+
+.logo-glow img {
+  width: 220px; height: 220px; object-fit: contain;
+  filter: drop-shadow(0 0 35px #9B79FF) drop-shadow(0 0 70px #6B4FD8) drop-shadow(0 0 110px #C4FF3C);
+  animation: logoPulse 3s ease-in-out infinite;
+}
+
+@keyframes logoPulse {
+  0%, 100% { filter: drop-shadow(0 0 30px #9B79FF) drop-shadow(0 0 60px #6B4FD8); }
+  50% { filter: drop-shadow(0 0 50px #C4FF3C) drop-shadow(0 0 80px #9B79FF) drop-shadow(0 0 120px #6B4FD8); }
+}
+
+.wow-text {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: clamp(2rem, 8vw, 5rem);
+  font-weight: 900;
+  background: linear-gradient(135deg, #9B79FF 0%, #C4FF3C 40%, #00E5D4 70%, #FF6B9D 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-top: 20px;
+  opacity: 0;
+  animation: wowReveal 1s ease 1.5s forwards;
+  letter-spacing: 0.1em;
+  text-shadow: none;
+}
+
+@keyframes wowReveal {
+  0% { opacity: 0; transform: translateY(30px) scale(0.8); }
+  60% { opacity: 1; transform: translateY(-5px) scale(1.05); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.wow-sub {
+  font-family: 'Exo 2', sans-serif;
+  font-size: 0.9rem;
+  color: var(--teal);
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  opacity: 0;
+  animation: wowReveal 1s ease 2.2s forwards;
+  margin-top: 8px;
+}
+
+.particle-burst {
+  position: absolute;
+  pointer-events: none;
+}
+
+.start-btn {
+  margin-top: 40px;
+  padding: 14px 48px;
+  border: 2px solid var(--violet-bright);
+  background: linear-gradient(135deg, rgba(107,79,216,0.3), rgba(196,255,60,0.1));
+  color: var(--white);
+  font-family: 'Exo 2', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  border-radius: 50px;
+  cursor: pointer;
+  opacity: 0;
+  animation: wowReveal 1s ease 3s forwards;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+
+.start-btn:hover {
+  background: linear-gradient(135deg, rgba(107,79,216,0.6), rgba(196,255,60,0.2));
+  box-shadow: 0 0 30px rgba(155,121,255,0.5);
+  transform: scale(1.05);
+}
+
+/* ─── MAIN APP ─── */
+#app {
+  position: fixed; inset: 0; z-index: 10;
+  display: none; flex-direction: column;
+  height: 100vh; overflow: hidden;
+}
+
+#app.visible { display: flex; }
+
+/* ─── TOP NAV ─── */
+.top-nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 20px;
+  background: rgba(4,4,16,0.8);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(107,79,216,0.3);
+  z-index: 50; flex-shrink: 0;
+}
+
+.nav-logo {
+  display: flex; align-items: center; gap: 10px;
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 1.1rem;
+  background: linear-gradient(90deg, #9B79FF, #C4FF3C);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.nav-logo img { width: 36px; height: 36px; object-fit: contain; filter: drop-shadow(0 0 8px #9B79FF); }
+
+.nav-score {
+  display: flex; gap: 16px; align-items: center;
+}
+
+.score-chip {
+  background: rgba(107,79,216,0.2);
+  border: 1px solid rgba(107,79,216,0.4);
+  border-radius: 20px;
+  padding: 4px 16px;
+  font-size: 0.85rem;
+  color: var(--violet-bright);
+  font-weight: 600;
+}
+
+.level-chip {
+  background: rgba(196,255,60,0.15);
+  border: 1px solid rgba(196,255,60,0.4);
+  border-radius: 20px;
+  padding: 4px 16px;
+  font-size: 0.85rem;
+  color: var(--neon);
+  font-weight: 600;
+}
+
+/* ─── MODE TABS ─── */
+.mode-bar {
+  display: flex; gap: 4px; padding: 10px 16px;
+  background: rgba(4,4,16,0.6);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(155,121,255,0.15);
+  overflow-x: auto; flex-shrink: 0;
+}
+
+.mode-btn {
+  padding: 8px 20px;
+  border: 1px solid rgba(107,79,216,0.3);
+  background: rgba(107,79,216,0.1);
+  color: var(--muted);
+  border-radius: 30px;
+  cursor: pointer;
+  font-family: 'Exo 2', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  transition: all 0.3s;
+}
+
+.mode-btn.active {
+  background: linear-gradient(135deg, rgba(107,79,216,0.5), rgba(196,255,60,0.1));
+  border-color: var(--violet-bright);
+  color: var(--white);
+  box-shadow: 0 0 15px rgba(107,79,216,0.4);
+}
+
+.mode-btn:hover:not(.active) {
+  border-color: var(--violet);
+  color: var(--violet-bright);
+}
+
+/* ─── MAIN CONTENT ─── */
+.main-content {
+  flex: 1; display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.game-area {
+  position: relative;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 20px;
+  overflow: hidden;
+}
+
+/* ─── CAMERA PANEL ─── */
+.side-panel {
+  background: rgba(4,4,16,0.8);
+  border-left: 1px solid rgba(107,79,216,0.2);
+  backdrop-filter: blur(20px);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+
+.camera-container {
+  position: relative;
+  flex-shrink: 0;
+  height: 200px;
+  background: #000;
+  overflow: hidden;
+}
+
+#video-el {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+  display: block;
+}
+
+#tracking-canvas {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  transform: scaleX(-1);
+}
+
+.camera-overlay {
+  position: absolute; inset: 0;
+  border: 2px solid rgba(107,79,216,0.5);
+  pointer-events: none;
+}
+
+.camera-label {
+  position: absolute; bottom: 8px; left: 8px;
+  background: rgba(4,4,16,0.8);
+  color: var(--teal);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  padding: 3px 8px;
+  border-radius: 10px;
+  text-transform: uppercase;
+}
+
+.tracking-status {
+  padding: 10px 14px;
+  display: flex; flex-direction: column; gap: 6px;
+  border-bottom: 1px solid rgba(107,79,216,0.15);
+}
+
+.track-row {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 0.72rem;
+}
+
+.track-name { color: var(--muted); }
+
+.track-val {
+  font-weight: 600; font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.track-active { background: rgba(0,229,212,0.2); color: var(--teal); }
+.track-inactive { background: rgba(139,127,191,0.1); color: var(--muted); }
+
+/* ─── DRAGON COMPANION ─── */
+.dragon-section {
+  padding: 14px;
+  flex: 1;
+  display: flex; flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+}
+
+.dragon-display {
+  text-align: center;
+}
+
+#dragon-canvas {
+  width: 100%;
+  height: 120px;
+}
+
+.dragon-name {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 0.8rem;
+  color: var(--violet-bright);
+  margin-top: 4px;
+}
+
+.xp-bar-wrap {
+  background: rgba(107,79,216,0.1);
+  border-radius: 10px;
+  height: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(107,79,216,0.3);
+}
+
+.xp-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--violet), var(--neon));
+  border-radius: 10px;
+  transition: width 0.5s ease;
+}
+
+/* ─── SIMON SAYS GAME ─── */
+.simon-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  max-width: 400px;
+  width: 100%;
+}
+
+.simon-note {
+  height: 120px;
+  border-radius: 20px;
+  border: 3px solid transparent;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: 'Exo 2', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  transition: all 0.15s ease;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+
+.simon-note:before {
+  content: '';
+  position: absolute; inset: 0;
+  background: inherit;
+  opacity: 0.1;
+  border-radius: inherit;
+}
+
+.note-a { background: rgba(107,79,216,0.2); border-color: rgba(107,79,216,0.4); color: var(--violet-bright); }
+.note-b { background: rgba(0,229,212,0.15); border-color: rgba(0,229,212,0.4); color: var(--teal); }
+.note-c { background: rgba(196,255,60,0.12); border-color: rgba(196,255,60,0.4); color: var(--neon); }
+.note-d { background: rgba(255,107,157,0.15); border-color: rgba(255,107,157,0.4); color: var(--rose); }
+
+.simon-note.lit {
+  transform: scale(1.05);
+  box-shadow: 0 0 40px currentColor;
+  border-color: currentColor;
+}
+
+.simon-note.wrong {
+  animation: wrongShake 0.3s ease;
+  border-color: #FF3333;
+  box-shadow: 0 0 30px #FF3333;
+}
+
+@keyframes wrongShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-8px); }
+  75% { transform: translateX(8px); }
+}
+
+.note-icon { font-size: 2rem; }
+.note-label { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.1em; opacity: 0.7; }
+
+/* ─── GAME STATUS ─── */
+.game-status {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.status-msg {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: clamp(1rem, 3vw, 1.4rem);
+  background: linear-gradient(90deg, var(--violet-bright), var(--teal));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 8px;
+}
+
+.sequence-display {
+  display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.seq-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: rgba(155,121,255,0.3);
+  border: 1px solid rgba(155,121,255,0.5);
+  transition: all 0.3s;
+}
+
+.seq-dot.done { background: var(--neon); border-color: var(--neon); box-shadow: 0 0 6px var(--neon); }
+.seq-dot.active { background: var(--violet-bright); border-color: var(--violet-bright); animation: dotPulse 0.5s infinite alternate; }
+
+@keyframes dotPulse {
+  from { transform: scale(1); }
+  to { transform: scale(1.5); box-shadow: 0 0 10px var(--violet-bright); }
+}
+
+/* ─── ORCHESTRA MODE ─── */
+.orchestra-stage {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  display: flex; flex-direction: column;
+  align-items: center; gap: 16px;
+}
+
+.conductor-area {
+  width: 100%;
+  height: 220px;
+  border: 2px solid rgba(107,79,216,0.3);
+  border-radius: 20px;
+  background: rgba(13,13,43,0.5);
+  backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.conductor-body {
+  position: relative;
+  transition: transform 0.1s ease;
+}
+
+.conductor-stick {
+  position: absolute;
+  width: 3px; height: 60px;
+  background: linear-gradient(to bottom, var(--gold), transparent);
+  border-radius: 2px;
+  transform-origin: bottom center;
+  top: -60px; right: -5px;
+  transition: transform 0.1s ease;
+}
+
+.instruments-row {
+  display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+}
+
+.instrument-btn {
+  width: 72px; height: 72px;
+  border-radius: 16px;
+  border: 2px solid rgba(107,79,216,0.3);
+  background: rgba(7,7,26,0.6);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 4px;
+  transition: all 0.2s;
+  font-size: 1.6rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.instrument-btn span {
+  font-size: 0.6rem;
+  color: var(--muted);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.instrument-btn.playing {
+  border-color: var(--gold);
+  box-shadow: 0 0 20px rgba(255,209,102,0.4);
+  background: rgba(255,209,102,0.1);
+  transform: scale(1.08);
+}
+
+.gesture-indicator {
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--muted);
+  padding: 8px 16px;
+  background: rgba(107,79,216,0.1);
+  border-radius: 20px;
+  border: 1px solid rgba(107,79,216,0.2);
+}
+
+/* ─── EGG WIDGET (orchestra corner) ─── */
+.egg-widget {
+  position: absolute;
+  right: 14px; bottom: 14px;
+  width: 76px; height: 92px;
+  z-index: 6;
+  filter: drop-shadow(0 0 12px rgba(155,121,255,0.5));
+  cursor: default;
+  transition: transform 0.3s;
+}
+.egg-widget.pulse { animation: eggPulse 1.4s ease-in-out infinite; }
+@keyframes eggPulse {
+  0%,100% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+}
+.egg-widget svg { width: 100%; height: 100%; }
+.egg-crack { opacity: 0; transition: opacity 0.4s; }
+.egg-crack.show { opacity: 1; }
+.egg-label {
+  position: absolute; right: 14px; bottom: 108px;
+  font-size: 0.62rem; color: var(--muted);
+  background: rgba(7,7,26,0.7); padding: 3px 8px;
+  border-radius: 10px; z-index: 6; white-space: nowrap;
+  border: 1px solid rgba(107,79,216,0.25);
+}
+.egg-widget.hatching { animation: eggShake 0.5s ease-in-out 3; }
+@keyframes eggShake {
+  0%,100% { transform: rotate(0deg); }
+  25% { transform: rotate(-8deg); }
+  75% { transform: rotate(8deg); }
+}
+
+/* ─── LOCKED MODE BUTTON ─── */
+.mode-btn.locked {
+  opacity: 0.4; cursor: not-allowed; position: relative;
+  pointer-events: none;
+}
+.mode-btn.locked:hover { transform: none; }
+.mode-btn.just-unlocked {
+  animation: unlockGlow 1.6s ease-in-out 2;
+}
+@keyframes unlockGlow {
+  0%,100% { box-shadow: none; }
+  50% { box-shadow: 0 0 18px var(--gold); }
+}
+
+/* ─── SANTUARIO 3D MODE ─── */
+#santuario-mode {
+  position: relative; width: 100%; height: 100%;
+  border-radius: 20px; overflow: hidden;
+  border: 2px solid rgba(107,79,216,0.3);
+  background: #030309;
+}
+#santuario-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display:block; }
+.sanct-hud {
+  position: absolute; top: 12px; left: 12px; right: 12px;
+  display: flex; justify-content: space-between; align-items: flex-start;
+  z-index: 5; pointer-events: none;
+}
+.sanct-stat {
+  background: rgba(7,7,26,0.65); backdrop-filter: blur(6px);
+  border: 1px solid rgba(107,79,216,0.3); border-radius: 12px;
+  padding: 6px 12px; font-size: 0.72rem; color: var(--white);
+  pointer-events: auto;
+}
+.sanct-hunger-bar {
+  width: 90px; height: 6px; border-radius: 4px; background: rgba(255,255,255,0.15);
+  margin-top: 4px; overflow: hidden;
+}
+.sanct-hunger-fill {
+  height: 100%; background: linear-gradient(90deg, var(--gold), var(--neon));
+  width: 40%; transition: width 0.4s;
+}
+.sanct-msg {
+  position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+  background: rgba(7,7,26,0.7); border: 1px solid rgba(107,79,216,0.3);
+  border-radius: 14px; padding: 6px 16px; font-size: 0.75rem; color: var(--crystal);
+  z-index: 5; text-align: center; pointer-events: none; max-width: 260px;
+}
+.sanct-joystick {
+  position: absolute; bottom: 20px; left: 20px;
+  width: 100px; height: 100px; border-radius: 50%;
+  background: rgba(107,79,216,0.12); border: 2px solid rgba(107,79,216,0.35);
+  z-index: 6; touch-action: none;
+}
+.sanct-joystick-knob {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: rgba(155,121,255,0.55); border: 2px solid var(--violet-bright);
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  transition: transform 0.05s;
+}
+.sanct-hint {
+  position: absolute; bottom: 24px; right: 20px; z-index: 6;
+  font-size: 0.65rem; color: var(--muted); text-align: right;
+  background: rgba(7,7,26,0.55); padding: 6px 10px; border-radius: 10px;
+  max-width: 140px;
+}
+.egg-locked-screen {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 14px;
+  text-align: center; padding: 24px; z-index: 4;
+}
+.egg-locked-screen .big-egg { width: 120px; opacity: 0.7; }
+
+/* ─── COSMOS MODE ─── */
+#cosmos-canvas {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+}
+
+.cosmos-mode-ui {
+  position: relative; z-index: 5;
+  display: flex; flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 20px;
+}
+
+.breathe-guide {
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  border: 3px solid var(--teal);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 0.85rem;
+  color: var(--teal);
+  animation: breatheAnim 8s ease-in-out infinite;
+  box-shadow: 0 0 30px rgba(0,229,212,0.3);
+  text-align: center;
+  cursor: pointer;
+}
+
+@keyframes breatheAnim {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(0,229,212,0.3); }
+  40% { transform: scale(1.3); box-shadow: 0 0 50px rgba(0,229,212,0.6); }
+  60% { transform: scale(1.3); }
+}
+
+.bpm-display {
+  font-size: 0.8rem;
+  color: var(--crystal);
+  background: rgba(125,211,252,0.1);
+  border: 1px solid rgba(125,211,252,0.3);
+  padding: 6px 20px;
+  border-radius: 20px;
+}
+
+/* ─── VOICE INDICATOR ─── */
+.voice-bar-wrap {
+  display: flex; gap: 3px; align-items: flex-end;
+  height: 40px; padding: 0 16px;
+}
+
+.voice-bar {
+  width: 4px;
+  background: var(--violet);
+  border-radius: 2px;
+  transition: height 0.05s ease;
+  min-height: 3px;
+}
+
+/* ─── CELEBRATION ─── */
+.celebration-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.celebration-overlay.show { opacity: 1; }
+
+.celebration-text {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: clamp(2rem, 6vw, 4rem);
+  font-weight: 900;
+  text-align: center;
+  animation: celebPop 0.5s cubic-bezier(.16,1,.3,1);
+  background: linear-gradient(135deg, var(--neon), var(--teal), var(--violet-bright));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 20px rgba(196,255,60,0.8));
+}
+
+@keyframes celebPop {
+  0% { transform: scale(0) rotate(-10deg); }
+  70% { transform: scale(1.1) rotate(3deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+/* ─── ACCESSIBILITY PANEL ─── */
+.access-panel {
+  position: fixed; bottom: 16px; left: 16px;
+  z-index: 80;
+  display: flex; gap: 6px;
+}
+
+.access-btn {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  border: 1px solid rgba(107,79,216,0.4);
+  background: rgba(4,4,16,0.8);
+  color: var(--muted);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem;
+  transition: all 0.2s;
+  backdrop-filter: blur(10px);
+}
+
+.access-btn.on {
+  border-color: var(--teal);
+  color: var(--teal);
+  box-shadow: 0 0 10px rgba(0,229,212,0.3);
+}
+
+/* ─── FREQUENCY BADGE ─── */
+.freq-badge {
+  font-size: 0.7rem;
+  color: var(--gold);
+  background: rgba(255,209,102,0.1);
+  border: 1px solid rgba(255,209,102,0.3);
+  padding: 3px 10px;
+  border-radius: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+}
+
+/* scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(107,79,216,0.4); border-radius: 2px; }
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 700px) {
+  .main-content { grid-template-columns: 1fr; }
+  .side-panel { display: none; }
+}
+
+/* ─── TUTORIAL GESTOS ─── */
+#gesture-tutorial {
+  position: fixed; inset: 0; z-index: 200;
+  display: none; align-items: center; justify-content: center;
+  background: rgba(4,4,16,0.88); backdrop-filter: blur(12px);
+  padding: 20px;
+}
+#gesture-tutorial.on { display: flex; }
+.tut-card {
+  width: min(420px, 94vw);
+  background: linear-gradient(160deg, rgba(22,13,51,0.98), rgba(7,7,26,0.98));
+  border: 1px solid rgba(155,121,255,0.45);
+  border-radius: 24px;
+  padding: 28px 24px 22px;
+  text-align: center;
+  box-shadow: 0 0 60px rgba(107,79,216,0.35);
+}
+.tut-step-num {
+  font-size: 0.7rem; letter-spacing: 0.25em; text-transform: uppercase;
+  color: var(--teal); margin-bottom: 8px;
+}
+.tut-title {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: clamp(1.2rem, 4vw, 1.6rem);
+  background: linear-gradient(90deg, #9B79FF, #C4FF3C);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text; margin-bottom: 10px;
+}
+.tut-emoji { font-size: 3.2rem; margin: 12px 0; line-height: 1;
+  filter: drop-shadow(0 0 20px rgba(155,121,255,0.6));
+  animation: tutPulse 1.6s ease-in-out infinite;
+}
+@keyframes tutPulse {
+  0%,100% { transform: scale(1); }
+  50% { transform: scale(1.12); }
+}
+.tut-desc {
+  font-size: 0.95rem; color: var(--muted); line-height: 1.55;
+  margin-bottom: 16px;
+}
+.tut-hint {
+  font-size: 0.78rem; color: var(--teal);
+  background: rgba(0,229,212,0.08);
+  border: 1px solid rgba(0,229,212,0.25);
+  border-radius: 12px; padding: 10px 14px; margin-bottom: 18px;
+}
+.tut-progress {
+  display: flex; gap: 6px; justify-content: center; margin-bottom: 18px;
+}
+.tut-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: rgba(155,121,255,0.25);
+  transition: all 0.3s;
+}
+.tut-dot.on { background: var(--violet-bright); box-shadow: 0 0 10px var(--violet-bright); transform: scale(1.3); }
+.tut-dot.done { background: var(--neon); }
+.tut-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.tut-btn {
+  padding: 10px 22px; border-radius: 30px; cursor: pointer;
+  font-family: 'Exo 2', sans-serif; font-size: 0.85rem; font-weight: 600;
+  letter-spacing: 0.06em; border: 1px solid rgba(155,121,255,0.5);
+  background: rgba(107,79,216,0.25); color: var(--white);
+  transition: all 0.2s;
+}
+.tut-btn:hover { background: rgba(107,79,216,0.5); box-shadow: 0 0 20px rgba(155,121,255,0.4); }
+.tut-btn.ghost {
+  background: transparent; border-color: rgba(139,127,191,0.4); color: var(--muted);
+}
+.tut-btn.success {
+  border-color: var(--neon); background: rgba(196,255,60,0.15); color: var(--neon);
+}
+.tut-detect {
+  min-height: 28px; font-size: 0.85rem; font-weight: 600;
+  color: var(--violet-bright); margin-bottom: 8px;
+}
+.tut-detect.ok { color: var(--neon); }
+#btn-tutorial {
+  position: fixed; bottom: 16px; right: 16px; z-index: 90;
+  padding: 10px 16px; border-radius: 30px;
+  border: 1px solid rgba(155,121,255,0.45);
+  background: rgba(4,4,16,0.85); color: var(--violet-bright);
+  font-family: 'Exo 2', sans-serif; font-size: 0.75rem; font-weight: 600;
+  letter-spacing: 0.08em; cursor: pointer; backdrop-filter: blur(10px);
+}
+#btn-tutorial:hover { box-shadow: 0 0 16px rgba(155,121,255,0.4); }
+
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+
+<!-- MediaPipe Hands — gestos reales de manos -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1675466862/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.3.1675466124/drawing_utils.js" crossorigin="anonymous"></script>
+</head>
+<body>
+
+<!-- COSMOS BG -->
+<div id="cosmos"></div>
+<canvas id="stars-canvas"></canvas>
+
+<!-- ─── INTRO ─── -->
+<div id="intro">
+  <div class="logo-glow">
+    <img src="nuhu_logo.png" alt="ÑUHU Resonance" id="logo-img">
+  </div>
+  <div class="wow-text">✨ ÑUHU RESONANCE ✨</div>
+  <div class="wow-sub">Conecta · Resuena · Protege · Evoluciona</div>
+  <button class="start-btn" id="start-btn">🐉 Despertar el Dragón</button>
+</div>
+
+<!-- ─── CELEBRATION ─── -->
+<div class="celebration-overlay" id="celebration">
+  <div class="celebration-text" id="celeb-text">¡Perfecto!</div>
+</div>
+
+<!-- ─── MAIN APP ─── -->
+<div id="app">
+
+  <!-- NAV -->
+  <div class="top-nav">
+    <div class="nav-logo">
+      <img src="nuhu_logo.png" alt="ÑUHU">
+      ÑUHU
+    </div>
+    <div class="nav-score">
+      <div class="score-chip">⭐ <span id="score-val">0</span></div>
+      <div class="level-chip">Nivel <span id="level-val">1</span></div>
+      <div class="freq-badge" id="freq-badge">432 Hz</div>
+    </div>
+  </div>
+
+  <!-- MODE BAR -->
+  <div class="mode-bar">
+    <button class="mode-btn active" data-mode="simon" onclick="switchMode('simon')">🎵 Simon Musical</button>
+    <button class="mode-btn" data-mode="orchestra" onclick="switchMode('orchestra')">🎼 Director de Orquesta</button>
+    <button class="mode-btn" data-mode="cosmos" onclick="switchMode('cosmos')">🌌 Santuario Cosmos</button>
+    <button class="mode-btn" data-mode="postseizure" onclick="switchMode('postseizure')">💜 Calma Post-Crisis</button>
+    <button class="mode-btn locked" data-mode="santuario" id="santuario-btn" onclick="switchMode('santuario')">🥚 Santuario</button>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="main-content">
+
+    <!-- GAME AREA -->
+    <div class="game-area" id="game-area">
+
+      <!-- SIMON MODE -->
+      <div id="simon-mode">
+        <div class="game-status">
+          <div class="status-msg" id="simon-msg">🐉 El dragón te guiará...</div>
+          <div class="sequence-display" id="seq-display"></div>
+          <div class="freq-badge" style="display:inline-block;margin-bottom:8px">Usa manos · voz · cuerpo · ojos</div>
+        </div>
+        <div class="simon-grid">
+          <div class="simon-note note-a" id="note-0" onclick="playerHit(0)">
+            <div class="note-icon">🔮</div>
+            <div>DO</div>
+            <div class="note-label">Violín</div>
+          </div>
+          <div class="simon-note note-b" id="note-1" onclick="playerHit(1)">
+            <div class="note-icon">💠</div>
+            <div>RE</div>
+            <div class="note-label">Piano</div>
+          </div>
+          <div class="simon-note note-c" id="note-2" onclick="playerHit(2)">
+            <div class="note-icon">🌿</div>
+            <div>MI</div>
+            <div class="note-label">Flauta</div>
+          </div>
+          <div class="simon-note note-d" id="note-3" onclick="playerHit(3)">
+            <div class="note-icon">🌸</div>
+            <div>SOL</div>
+            <div class="note-label">Percusión</div>
+          </div>
+        </div>
+        <div style="margin-top:16px;text-align:center">
+          <button class="start-btn" id="simon-start-btn" style="margin:0;font-size:0.85rem;padding:10px 32px" onclick="startSimon()">
+            ▶ Iniciar Secuencia
+          </button>
+        </div>
+      </div>
+
+      <!-- ORCHESTRA MODE -->
+      <div id="orchestra-mode" style="display:none">
+        <div class="orchestra-stage">
+          <div class="game-status">
+            <div class="status-msg">🎼 Diriges la Orquesta</div>
+            <div style="font-size:0.8rem;color:var(--muted);margin-top:4px">Mueve brazos · inclina cabeza · tu voz dirige</div>
+          </div>
+          <div class="conductor-area" id="conductor-area">
+            <canvas id="orchestra-canvas" width="550" height="200"></canvas>
+          </div>
+          <div class="gesture-indicator" id="gesture-info">
+            🖐 Brazo derecho arriba → 🎻 Violín &nbsp;|&nbsp; 🖐 Brazo izquierdo → 🎹 Piano &nbsp;|&nbsp; 🗣 Voz → 🎤 Coros
+          </div>
+          <div class="instruments-row">
+            <div class="instrument-btn" id="inst-violin"><div>🎻</div><span>Violín</span></div>
+            <div class="instrument-btn" id="inst-piano"><div>🎹</div><span>Piano</span></div>
+            <div class="instrument-btn" id="inst-flute"><div>🪗</div><span>Flauta</span></div>
+            <div class="instrument-btn" id="inst-drums"><div>🥁</div><span>Percusión</span></div>
+            <div class="instrument-btn" id="inst-cello"><div>🎸</div><span>Chelo</span></div>
+            <div class="instrument-btn" id="inst-voice"><div>🎤</div><span>Voz</span></div>
+          </div>
+          <div class="score-chip">Puntuación Director: <span id="orch-score">0</span></div>
+        </div>
+
+        <!-- EGG WIDGET -->
+        <div class="egg-label" id="egg-label">El huevo late...</div>
+        <div class="egg-widget" id="egg-widget">
+          <svg viewBox="0 0 120 140" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <radialGradient id="eggGradMain" cx="40%" cy="35%" r="65%">
+                <stop offset="0%" stop-color="#C9B8FF"/>
+                <stop offset="55%" stop-color="#6B4FD8"/>
+                <stop offset="100%" stop-color="#2B1B6B"/>
+              </radialGradient>
+              <linearGradient id="eggStrokeMain" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#9B79FF"/>
+                <stop offset="100%" stop-color="#C4FF3C"/>
+              </linearGradient>
+            </defs>
+            <ellipse id="egg-shell" cx="60" cy="75" rx="48" ry="62" fill="url(#eggGradMain)" stroke="url(#eggStrokeMain)" stroke-width="2"/>
+            <g id="egg-cracks" stroke="#040410" stroke-width="2" fill="none" stroke-linecap="round">
+              <path class="egg-crack crack-1" d="M40 40 L48 55 L38 68 L50 82"/>
+              <path class="egg-crack crack-2" d="M85 35 L75 50 L88 60 L72 78"/>
+              <path class="egg-crack crack-3" d="M55 95 L65 108 L52 120"/>
+            </g>
+          </svg>
+        </div>
+      </div>
+
+      <!-- COSMOS MODE -->
+      <div id="cosmos-mode" style="display:none; width:100%; height:100%; position:relative">
+        <canvas id="cosmos-canvas" style="position:absolute;inset:0;width:100%;height:100%"></canvas>
+        <div class="cosmos-mode-ui" style="position:relative;z-index:5;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px">
+          <div style="font-family:'Cinzel Decorative',serif;font-size:1.2rem;color:var(--crystal);text-align:center">
+            🌌 Santuario Estelar
+          </div>
+          <div class="breathe-guide" id="breathe-circle">
+            INHALA<br>suave
+          </div>
+          <div class="bpm-display">♪ 52 BPM · 432 Hz · Calma</div>
+          <div style="font-size:0.75rem;color:var(--muted);text-align:center;max-width:260px">
+            Toca constelaciones · Dibuja nebulas con tu mano · El universo responde a tu respiración
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
+            <span class="freq-badge">🧠 Binaural 40Hz</span>
+            <span class="freq-badge">🌊 Pentatónica</span>
+            <span class="freq-badge">❄️ Sin destellos</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- POST SEIZURE MODE -->
+      <div id="postseizure-mode" style="display:none;width:100%;height:100%;align-items:center;justify-content:center;flex-direction:column;gap:20px;padding:20px">
+        <div style="font-family:'Cinzel Decorative',serif;font-size:1.1rem;color:var(--teal);text-align:center">
+          💜 Modo Calma
+        </div>
+        <div style="font-size:0.85rem;color:var(--muted);text-align:center">Sigue al dragón. No hay prisa. Estás seguro/a.</div>
+        <canvas id="dragon-calm-canvas" width="200" height="200"></canvas>
+        <div class="breathe-guide" id="calm-breathe" style="width:160px;height:160px;font-size:1rem">
+          🐉<br>Respira
+        </div>
+        <div class="bpm-display">♪ 48 BPM · 432 Hz · Sin presión</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
+          <span class="freq-badge">✓ Cero destellos</span>
+          <span class="freq-badge">✓ Sin alarmas</span>
+          <span class="freq-badge">✓ Sin temporizadores</span>
+        </div>
+      </div>
+
+      <!-- SANTUARIO MODE (3D, se desbloquea al eclosionar el huevo) -->
+      <div id="santuario-mode" style="display:none">
+        <div class="egg-locked-screen" id="santuario-locked">
+          <svg class="big-egg" viewBox="0 0 120 140" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="60" cy="75" rx="48" ry="62" fill="url(#eggGradMain)" stroke="url(#eggStrokeMain)" stroke-width="2"/>
+          </svg>
+          <div style="font-family:'Cinzel Decorative',serif;color:var(--crystal);font-size:1rem">El Santuario está sellado</div>
+          <div style="font-size:0.8rem;color:var(--muted);max-width:260px">Sigue jugando en Simon Musical y Director de Orquesta. Cuando el huevo eclosione, tu dragón despertará aquí.</div>
+        </div>
+        <canvas id="santuario-canvas"></canvas>
+        <div class="sanct-hud" id="sanct-hud" style="display:none">
+          <div class="sanct-stat">
+            🐉 <span id="sanct-dragon-name">Nexo</span>
+            <div class="sanct-hunger-bar"><div class="sanct-hunger-fill" id="sanct-hunger-fill"></div></div>
+          </div>
+          <div class="sanct-stat">✨ Orbes: <span id="sanct-orb-count">0</span></div>
+        </div>
+        <div class="sanct-msg" id="sanct-msg" style="display:none">Muévete y encuentra a Nexo comida de estrellas</div>
+        <div class="sanct-joystick" id="sanct-joystick" style="display:none">
+          <div class="sanct-joystick-knob" id="sanct-joystick-knob"></div>
+        </div>
+        <div class="sanct-hint" id="sanct-hint" style="display:none">Flechas / WASD para moverte · Arrastra el círculo en móvil</div>
+      </div>
+
+    </div><!-- end game-area -->
+
+    <!-- SIDE PANEL -->
+    <div class="side-panel">
+
+      <!-- CAMERA -->
+      <div class="camera-container">
+        <video id="video-el" autoplay playsinline muted></video>
+        <canvas id="tracking-canvas"></canvas>
+        <div class="camera-overlay"></div>
+        <div class="camera-label" id="cam-label">📷 Iniciando cámara...</div>
+      </div>
+
+      <!-- VOICE VISUALIZER -->
+      <div style="padding:8px 14px;border-bottom:1px solid rgba(107,79,216,0.15)">
+        <div style="font-size:0.7rem;color:var(--muted);margin-bottom:4px">🎤 VOZ</div>
+        <div class="voice-bar-wrap" id="voice-bars">
+          <!-- bars generated by JS -->
+        </div>
+      </div>
+
+      <!-- TRACKING STATUS -->
+      <div class="tracking-status">
+        <div class="track-row">
+          <span class="track-name">📷 Cámara</span>
+          <span class="track-val track-inactive" id="t-cam">OFF</span>
+        </div>
+        <div class="track-row">
+          <span class="track-name">🖐 Manos</span>
+          <span class="track-val track-inactive" id="t-hands">---</span>
+        </div>
+        <div class="track-row">
+          <span class="track-name">🧍 Cuerpo</span>
+          <span class="track-val track-inactive" id="t-body">---</span>
+        </div>
+        <div class="track-row">
+          <span class="track-name">🗣 Voz</span>
+          <span class="track-val track-inactive" id="t-voice">---</span>
+        </div>
+        <div class="track-row">
+          <span class="track-name">👁 Ojos</span>
+          <span class="track-val track-inactive" id="t-eyes">---</span>
+        </div>
+      </div>
+
+      <!-- DRAGON -->
+      <div class="dragon-section">
+        <div class="dragon-display">
+          <canvas id="dragon-canvas" width="260" height="120"></canvas>
+          <div class="dragon-name">✨ Nexo · Lv.<span id="dragon-level">1</span></div>
+        </div>
+        <div>
+          <div style="font-size:0.7rem;color:var(--muted);margin-bottom:4px;display:flex;justify-content:space-between">
+            <span>EXP Dragón</span><span id="xp-text">0/100</span>
+          </div>
+          <div class="xp-bar-wrap">
+            <div class="xp-bar" id="xp-bar" style="width:0%"></div>
+          </div>
+        </div>
+        <div style="font-size:0.72rem;color:var(--muted);text-align:center;background:rgba(107,79,216,0.1);padding:8px;border-radius:10px;border:1px solid rgba(107,79,216,0.2)">
+          🐉 <span id="dragon-msg">Nexo espera tu primera nota...</span>
+        </div>
+      </div>
+
+    </div><!-- end side-panel -->
+  </div><!-- end main-content -->
+</div><!-- end app -->
+
+<!-- ACCESSIBILITY PANEL -->
+<div class="access-panel">
+  <button class="access-btn" id="btn-cam" title="Activar cámara" onclick="toggleCamera()">📷</button>
+  <button class="access-btn" id="btn-voice" title="Activar voz" onclick="toggleVoice()">🎤</button>
+  <button class="access-btn" id="btn-hap" title="Modo háptico" onclick="toggleHaptic()">📳</button>
+  <button class="access-btn" id="btn-low" title="Modo bajo estímulo" onclick="toggleLowStim()">🧠</button>
+  <button class="access-btn" id="btn-dark" title="Alto contraste" onclick="toggleContrast()">🔲</button>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// ÑUHU RESONANCE — MAIN ENGINE
+// ═══════════════════════════════════════════
+
+// ─── STATE ───
+const state = {
+  score: 0, level: 1, xp: 0, dragonLevel: 1,
+  currentMode: 'simon',
+  cameraOn: false, voiceOn: false, hapticOn: false,
+  lowStim: false, highContrast: false,
+  simonSeq: [], playerSeq: [], simonPlaying: false, playerTurn: false,
+  orchScore: 0,
+  audioCtx: null,
+  voiceAnalyser: null, voiceStream: null,
+  handX: 0.5, handY: 0.5, rightArmY: 0.5, leftArmY: 0.5,
+  headTilt: 0, bodyLean: 0, mouthOpen: false,
+  blinkL: false, blinkR: false,
+  mediaStream: null,
+  animFrame: null,
+  cosmosStars: [], cosmosShootingStars: [],
+  dragonXP: 0,
+  eggHatched: false, eggStage: 0, hatchLevel: 3,
+  dragonMessages: [
+    'Nexo espera tu primera nota...',
+    'Siente la vibración del universo.',
+    'Tu frecuencia es única.',
+    '¡Nexo cree en ti!',
+    'La música fluye a través de ti.',
+    'Cada nota es un mundo nuevo.',
+    'Resonas con las estrellas.',
+  ],
+};
+
+// ─── AUDIO ───
+function getAudio() {
+  if (!state.audioCtx) state.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return state.audioCtx;
+}
+
+const NOTES = [
+  { freq: 261.63, name: 'DO', color: '#9B79FF' },
+  { freq: 293.66, name: 'RE', color: '#00E5D4' },
+  { freq: 329.63, name: 'MI', color: '#C4FF3C' },
+  { freq: 392.00, name: 'SOL', color: '#FF6B9D' },
+];
+
+function playNote(idx, duration = 0.5) {
+  const ctx = getAudio();
+  const note = NOTES[idx];
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  const rev = ctx.createConvolver ? null : null;
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.type = ['sine','triangle','sine','triangle'][idx];
+  osc.frequency.setValueAtTime(note.freq * 0.5, ctx.currentTime); // 432Hz-ish tuning
+  gain.gain.setValueAtTime(0, ctx.currentTime);
+  gain.gain.linearRampToValueAtTime(0.35, ctx.currentTime + 0.05);
+  gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration);
+  osc.start(ctx.currentTime);
+  osc.stop(ctx.currentTime + duration + 0.1);
+}
+
+function playChord(freqs, dur = 0.8) {
+  const ctx = getAudio();
+  freqs.forEach(f => {
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.connect(g); g.connect(ctx.destination);
+    osc.frequency.value = f;
+    g.gain.setValueAtTime(0, ctx.currentTime);
+    g.gain.linearRampToValueAtTime(0.15, ctx.currentTime + 0.05);
+    g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + dur);
+    osc.start(); osc.stop(ctx.currentTime + dur + 0.1);
+  });
+}
+
+function playSuccess() { playChord([523, 659, 784], 1); }
+function playLevelUp() { playChord([523, 659, 784, 1047], 1.5); }
+function playError() {
+  const ctx = getAudio();
+  const osc = ctx.createOscillator();
+  const g = ctx.createGain();
+  osc.connect(g); g.connect(ctx.destination);
+  osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(150, ctx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.3);
+  g.gain.setValueAtTime(0.3, ctx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+  osc.start(); osc.stop(ctx.currentTime + 0.4);
+}
+
+// ─── STARS ───
+function initStars() {
+  const canvas = document.getElementById('stars-canvas');
+  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+  const ctx = canvas.getContext('2d');
+  state.cosmosStars = Array.from({length: 200}, () => ({
+    x: Math.random()*canvas.width,
+    y: Math.random()*canvas.height,
+    r: Math.random()*1.5+0.2,
+    alpha: Math.random()*0.8+0.2,
+    twinkle: Math.random()*0.02+0.005,
+    phase: Math.random()*Math.PI*2,
+    color: ['#fff','#c4b5fd','#7dd3fc','#a7f3d0'][Math.floor(Math.random()*4)]
+  }));
+  state.cosmosShootingStars = [];
+  animateStars(ctx, canvas);
+}
+
+function animateStars(ctx, canvas) {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const t = Date.now()/1000;
+  state.cosmosStars.forEach(s => {
+    const a = s.alpha + Math.sin(t*s.twinkle*60+s.phase)*0.3;
+    ctx.globalAlpha = Math.max(0,Math.min(1,a));
+    ctx.fillStyle = s.color;
+    ctx.beginPath();
+    ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+    ctx.fill();
+  });
+  // Shooting stars
+  if (Math.random() < 0.003) {
+    state.cosmosShootingStars.push({
+      x: Math.random()*canvas.width, y: Math.random()*canvas.height*0.5,
+      vx: (Math.random()-0.3)*8, vy: Math.random()*4+2,
+      life: 1, maxLife: 1
+    });
+  }
+  state.cosmosShootingStars = state.cosmosShootingStars.filter(s => s.life > 0);
+  state.cosmosShootingStars.forEach(s => {
+    ctx.globalAlpha = s.life;
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(s.x, s.y);
+    ctx.lineTo(s.x - s.vx*6, s.y - s.vy*6);
+    ctx.stroke();
+    s.x += s.vx; s.y += s.vy; s.life -= 0.03;
+  });
+  ctx.globalAlpha = 1;
+  requestAnimationFrame(() => animateStars(ctx, canvas));
+}
+
+// ─── DRAGON ANIMATION ───
+function drawDragon(canvasId) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const t = Date.now()/1000;
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0,0,w,h);
+  
+  const cx = w/2, cy = h/2;
+  const float = Math.sin(t*1.5)*8;
+  const breathe = Math.sin(t*2)*3;
+  
+  // Glow
+  const grd = ctx.createRadialGradient(cx,cy+float,0,cx,cy+float,60);
+  grd.addColorStop(0,'rgba(107,79,216,0.4)');
+  grd.addColorStop(1,'rgba(107,79,216,0)');
+  ctx.fillStyle = grd;
+  ctx.fillRect(0,0,w,h);
+  
+  // Body
+  ctx.save();
+  ctx.translate(cx, cy+float);
+  
+  // Tail
+  ctx.beginPath();
+  ctx.moveTo(-35,20);
+  ctx.quadraticCurveTo(-60+Math.sin(t)*10,40,-80+Math.sin(t*1.3)*8,20);
+  ctx.strokeStyle = '#6B4FD8';
+  ctx.lineWidth = 12; ctx.lineCap = 'round';
+  ctx.stroke();
+  
+  // Body
+  ctx.fillStyle = '#7B5FE8';
+  ctx.beginPath();
+  ctx.ellipse(0,0,35+breathe,25,0,0,Math.PI*2);
+  ctx.fill();
+  
+  // Wing L
+  ctx.save();
+  ctx.translate(-20,-5);
+  ctx.rotate(-0.3+Math.sin(t*2)*0.15);
+  ctx.fillStyle = '#9B79FF';
+  ctx.beginPath();
+  ctx.moveTo(0,0); ctx.lineTo(-30,-30); ctx.lineTo(-10,10);
+  ctx.closePath(); ctx.fill();
+  ctx.restore();
+  
+  // Wing R
+  ctx.save();
+  ctx.translate(20,-5);
+  ctx.rotate(0.3-Math.sin(t*2)*0.15);
+  ctx.fillStyle = '#9B79FF';
+  ctx.beginPath();
+  ctx.moveTo(0,0); ctx.lineTo(30,-30); ctx.lineTo(10,10);
+  ctx.closePath(); ctx.fill();
+  ctx.restore();
+  
+  // Head
+  ctx.fillStyle = '#8B6FD8';
+  ctx.beginPath();
+  ctx.ellipse(28,-5,18,14,0.3,0,Math.PI*2);
+  ctx.fill();
+  
+  // Eye
+  ctx.fillStyle = '#C4FF3C';
+  ctx.beginPath();
+  ctx.arc(34,-7,4,0,Math.PI*2);
+  ctx.fill();
+  ctx.fillStyle = '#000';
+  ctx.beginPath();
+  ctx.arc(35,-7,2,0,Math.PI*2);
+  ctx.fill();
+  
+  // Horn
+  ctx.strokeStyle = '#FFD166';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(32,-18); ctx.lineTo(28,-8);
+  ctx.stroke();
+  
+  // Spines
+  for(let i=0;i<3;i++) {
+    const sx = -10+i*12, sy = -22-i*3+Math.sin(t*2+i)*2;
+    ctx.strokeStyle = '#C4FF3C';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(sx-10,0); ctx.lineTo(sx,sy);
+    ctx.stroke();
+  }
+  
+  // Orb
+  const orbGlow = ctx.createRadialGradient(0,0,0,0,0,12);
+  orbGlow.addColorStop(0,'rgba(196,255,60,0.9)');
+  orbGlow.addColorStop(1,'rgba(196,255,60,0)');
+  ctx.fillStyle = orbGlow;
+  ctx.beginPath();
+  ctx.arc(0,0,12+Math.sin(t*3)*2,0,Math.PI*2);
+  ctx.fill();
+  
+  ctx.restore();
+  requestAnimationFrame(() => drawDragon(canvasId));
+}
+
+// ─── SIMON SAYS ───
+function startSimon() {
+  getAudio(); // unlock
+  state.simonSeq = [];
+  state.score = 0;
+  updateScore();
+  addSimonStep();
+}
+
+function addSimonStep() {
+  state.simonSeq.push(Math.floor(Math.random()*4));
+  state.playerSeq = [];
+  state.playerTurn = false;
+  updateSeqDisplay();
+  showMsg('👀 Observa al Dragón...');
+  setTimeout(() => playSimonSeq(), 600);
+}
+
+function playSimonSeq() {
+  state.simonPlaying = true;
+  let i = 0;
+  function next() {
+    if (i >= state.simonSeq.length) {
+      state.simonPlaying = false;
+      state.playerTurn = true;
+      showMsg('🎵 ¡Tu turno! ' + getInputHint());
+      updateSeqDisplay();
+      return;
+    }
+    const idx = state.simonSeq[i];
+    lightNote(idx);
+    playNote(idx);
+    i++;
+    setTimeout(next, 800);
+  }
+  next();
+}
+
+function lightNote(idx, duration = 500) {
+  const el = document.getElementById('note-'+idx);
+  if (!el) return;
+  el.classList.add('lit');
+  setTimeout(() => el.classList.remove('lit'), duration);
+}
+
+function playerHit(idx) {
+  if (!state.playerTurn || state.simonPlaying) return;
+  getAudio();
+  playNote(idx, 0.3);
+  lightNote(idx, 300);
+  state.playerSeq.push(idx);
+  const pos = state.playerSeq.length - 1;
+  
+  if (state.playerSeq[pos] !== state.simonSeq[pos]) {
+    // Wrong
+    const el = document.getElementById('note-'+idx);
+    el.classList.add('wrong');
+    setTimeout(() => el.classList.remove('wrong'), 400);
+    playError();
+    showMsg('💜 Casi... ¡Inténtalo de nuevo!');
+    state.playerTurn = false;
+    setTimeout(startSimon, 1500);
+    return;
+  }
+  
+  updateSeqDisplay();
+  
+  if (state.playerSeq.length === state.simonSeq.length) {
+    // Correct!
+    state.score += state.simonSeq.length * 10;
+    addXP(state.simonSeq.length * 5);
+    updateScore();
+    playSuccess();
+    
+    if (state.simonSeq.length % 5 === 0) {
+      state.level++;
+      document.getElementById('level-val').textContent = state.level;
+      celebrate('🐉 ¡NIVEL ' + state.level + '!');
+      playLevelUp();
+      updateFreq();
+    } else {
+      celebrate('✨ ¡Perfecto!');
+    }
+    
+    state.playerTurn = false;
+    setDragonMsg();
+    setTimeout(() => addSimonStep(), 1800);
+  }
+}
+
+function getInputHint() {
+  const hints = ['Toca · Voz · Manos', 'Mueve tu cuerpo', 'Usa tu voz', '¡Gestos!'];
+  return hints[Math.floor(Math.random()*hints.length)];
+}
+
+function showMsg(msg) {
+  document.getElementById('simon-msg').textContent = msg;
+}
+
+function updateSeqDisplay() {
+  const el = document.getElementById('seq-display');
+  el.innerHTML = '';
+  state.simonSeq.forEach((_, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'seq-dot';
+    if (i < state.playerSeq.length) dot.classList.add('done');
+    else if (i === state.playerSeq.length && state.playerTurn) dot.classList.add('active');
+    el.appendChild(dot);
+  });
+}
+
+function updateScore() {
+  document.getElementById('score-val').textContent = state.score;
+}
+
+function updateFreq() {
+  const freqs = ['432 Hz','528 Hz','396 Hz','639 Hz'];
+  document.getElementById('freq-badge').textContent = freqs[(state.level-1)%4];
+}
+
+// ─── XP & DRAGON ───
+function addXP(amount) {
+  state.dragonXP += amount;
+  const cap = 100 * state.dragonLevel;
+  if (state.dragonXP >= cap) {
+    state.dragonXP -= cap;
+    state.dragonLevel++;
+    document.getElementById('dragon-level').textContent = state.dragonLevel;
+  }
+  const pct = (state.dragonXP / (100*state.dragonLevel)) * 100;
+  document.getElementById('xp-bar').style.width = pct + '%';
+  document.getElementById('xp-text').textContent = state.dragonXP + '/' + (100*state.dragonLevel);
+  updateEggVisual();
+}
+
+// ─── EGG (Director de Orquesta → Santuario) ───
+function updateEggVisual() {
+  if (state.eggHatched) return;
+  const widget = document.getElementById('egg-widget');
+  const label = document.getElementById('egg-label');
+  if (!widget) return;
+
+  // Progress toward hatch, driven by dragonLevel (fed by Simon + Orchestra XP)
+  const stage = Math.min(3, Math.floor(state.dragonLevel));
+  if (stage !== state.eggStage) {
+    state.eggStage = stage;
+    widget.classList.add('pulse');
+    document.querySelectorAll('#egg-cracks .egg-crack').forEach((c, i) => {
+      c.classList.toggle('show', i < stage);
+    });
+  }
+  const labels = ['El huevo late...', 'Se agrieta un poco...', '¡Está a punto de eclosionar!', '¡Está eclosionando!'];
+  label.textContent = labels[Math.min(stage, labels.length - 1)];
+
+  if (state.dragonLevel >= state.hatchLevel && !state.eggHatched) {
+    hatchEgg();
+  }
+}
+
+function hatchEgg() {
+  state.eggHatched = true;
+  const widget = document.getElementById('egg-widget');
+  widget.classList.add('hatching');
+  playLevelUp();
+  setTimeout(() => {
+    document.getElementById('egg-label').textContent = '¡Nexo ha eclosionado! 🐉';
+    const btn = document.getElementById('santuario-btn');
+    btn.classList.remove('locked');
+    btn.classList.add('just-unlocked');
+    celebrate('¡El huevo eclosionó!');
+    setTimeout(() => btn.classList.remove('just-unlocked'), 3500);
+  }, 1500);
+}
+
+function setDragonMsg() {
+  const msgs = state.dragonMessages;
+  document.getElementById('dragon-msg').textContent = msgs[Math.floor(Math.random()*msgs.length)];
+}
+
+// ─── CELEBRATION ───
+function celebrate(text) {
+  const el = document.getElementById('celebration');
+  const txt = document.getElementById('celeb-text');
+  txt.textContent = text;
+  el.classList.add('show');
+  // Particles
+  spawnParticles();
+  setTimeout(() => el.classList.remove('show'), 2000);
+}
+
+function spawnParticles() {
+  const colors = ['#9B79FF','#C4FF3C','#00E5D4','#FF6B9D','#FFD166'];
+  for (let i = 0; i < 20; i++) {
+    const p = document.createElement('div');
+    p.style.cssText = `
+      position:fixed; width:8px; height:8px;
+      border-radius:50%; pointer-events:none; z-index:300;
+      background:${colors[i%5]};
+      left:${40+Math.random()*20}vw;
+      top:${40+Math.random()*20}vh;
+      animation: particleFly ${0.5+Math.random()*1}s ease forwards;
+      transform: translate(${(Math.random()-0.5)*200}px, ${(Math.random()-0.5)*200}px);
+    `;
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), 1500);
+  }
+}
+
+// ─── MODE SWITCH ───
+const MODE_DISPLAY = {
+  'simon': 'block',
+  'orchestra': 'flex',
+  'cosmos': 'block',
+  'postseizure': 'flex',
+  'santuario': 'block'
+};
+
+function switchMode(mode) {
+  if (mode === 'santuario' && !state.eggHatched) {
+    showMsg('El huevo aún no eclosiona 🥚');
+    return;
+  }
+  state.currentMode = mode;
+  document.querySelectorAll('.mode-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.mode === mode);
+  });
+  ['simon-mode','orchestra-mode','cosmos-mode','postseizure-mode','santuario-mode'].forEach(id => {
+    document.getElementById(id).style.display = 'none';
+  });
+  const el = document.getElementById(mode + '-mode');
+  el.style.display = MODE_DISPLAY[mode] || 'block';
+
+  if (mode === 'cosmos') drawCosmosMode();
+  if (mode === 'orchestra') initOrchestraCanvas();
+  if (mode === 'santuario') enterSanctuary();
+  // Ambient music by mode
+  stopAllAmbient();
+  if (mode === 'santuario' || mode === 'cosmos') playAmbient('bg-forest', 0.35);
+  else if (mode === 'postseizure') playAmbient('bg-breath', 0.4);
+  else if (mode === 'orchestra') playAmbient('bg-hollow', 0.2);
+
+}
+
+// ─── ORCHESTRA ───
+let orchAnimFrame = null;
+function initOrchestraCanvas() {
+  const canvas = document.getElementById('orchestra-canvas');
+  if (!canvas) return;
+  if (orchAnimFrame) cancelAnimationFrame(orchAnimFrame);
+  animateOrchestra(canvas);
+}
+
+function animateOrchestra(canvas) {
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  const t = Date.now()/1000;
+  ctx.clearRect(0,0,w,h);
+  
+  // Stage glow
+  const grd = ctx.createRadialGradient(w/2,h/2,0,w/2,h/2,w/2);
+  grd.addColorStop(0,'rgba(107,79,216,0.15)');
+  grd.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle = grd;
+  ctx.fillRect(0,0,w,h);
+  
+  // Staff lines
+  for (let i = 0; i < 5; i++) {
+    const y = 60 + i*20;
+    ctx.strokeStyle = 'rgba(155,121,255,0.2)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(20, y); ctx.lineTo(w-20, y);
+    ctx.stroke();
+  }
+  
+  // Conductor figure (reacts to tracking)
+  const cx = w/2, cy = h*0.65;
+  const armR = state.rightArmY; // 0-1
+  const armL = state.leftArmY;
+  const tilt = state.headTilt;
+  
+  ctx.save();
+  ctx.translate(cx, cy);
+  
+  // Body
+  ctx.strokeStyle = '#9B79FF';
+  ctx.lineWidth = 3;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(0,-40); ctx.lineTo(0,0);
+  ctx.stroke();
+  
+  // Arms (react to real hand tracking or simulated)
+  const rAngle = -0.5 + armR * -1.2 + Math.sin(t*2)*0.1;
+  const lAngle = Math.PI+0.5 - armL * -1.2 + Math.sin(t*2+1)*0.1;
+  
+  ctx.strokeStyle = '#C4FF3C';
+  ctx.lineWidth = 2.5;
+  // Right arm (baton)
+  ctx.beginPath();
+  ctx.moveTo(0,-20);
+  ctx.lineTo(Math.cos(rAngle)*50, -20+Math.sin(rAngle)*50);
+  ctx.stroke();
+  // Baton
+  ctx.strokeStyle = '#FFD166';
+  ctx.lineWidth = 1.5;
+  const rTip = {x: Math.cos(rAngle)*50, y: -20+Math.sin(rAngle)*50};
+  ctx.beginPath();
+  ctx.moveTo(rTip.x, rTip.y);
+  ctx.lineTo(rTip.x+Math.cos(rAngle)*30, rTip.y+Math.sin(rAngle)*30);
+  ctx.stroke();
+  
+  // Left arm
+  ctx.strokeStyle = '#00E5D4';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(0,-20);
+  ctx.lineTo(Math.cos(lAngle)*50, -20+Math.sin(lAngle)*50);
+  ctx.stroke();
+  
+  // Head
+  ctx.fillStyle = '#8B6FD8';
+  ctx.beginPath();
+  ctx.arc(0,-55+Math.sin(t)*3,15,0,Math.PI*2);
+  ctx.fill();
+  
+  // Legs
+  ctx.strokeStyle = '#9B79FF';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(0,0); ctx.lineTo(-15,30+Math.sin(t*2)*3);
+  ctx.moveTo(0,0); ctx.lineTo(15,30+Math.sin(t*2+1)*3);
+  ctx.stroke();
+  
+  ctx.restore();
+  
+  // Sound waves from instruments based on arm position
+  const intensity = (1-armR)*100;
+  if (intensity > 30) {
+    ctx.strokeStyle = `rgba(196,255,60,${intensity/200})`;
+    ctx.lineWidth = 2;
+    for (let r = 20; r < 80; r += 20) {
+      ctx.beginPath();
+      ctx.arc(cx+120, cy-20, r, -Math.PI, 0);
+      ctx.stroke();
+    }
+  }
+  
+  orchAnimFrame = requestAnimationFrame(() => animateOrchestra(canvas));
+}
+
+// Score orchestra
+let orchInterval = null;
+function startOrchScoring() {
+  if (orchInterval) clearInterval(orchInterval);
+  orchInterval = setInterval(() => {
+    if (state.currentMode === 'orchestra') {
+      const activity = Math.abs(state.rightArmY - 0.5) + Math.abs(state.leftArmY - 0.5);
+      if (activity > 0.1) {
+        state.orchScore += Math.floor(activity * 10);
+        document.getElementById('orch-score').textContent = state.orchScore;
+        
+        // Activate instruments based on gesture
+        if (state.rightArmY < 0.4) activateInstrument('violin');
+        if (state.leftArmY < 0.4) activateInstrument('piano');
+        if (state.mouthOpen) activateInstrument('voice');
+        if (Math.abs(state.headTilt) > 0.2) activateInstrument('flute');
+        
+        addXP(1);
+      }
+    }
+  }, 500);
+}
+
+function activateInstrument(name) {
+  const el = document.getElementById('inst-'+name);
+  if (!el) return;
+  el.classList.add('playing');
+  
+  // Play sound
+  const freqMap = {violin:440, piano:523, flute:698, drums:150, cello:220, voice:330};
+  const freq = freqMap[name] || 440;
+  const ctx = getAudio();
+  const osc = ctx.createOscillator();
+  const g = ctx.createGain();
+  osc.connect(g); g.connect(ctx.destination);
+  osc.frequency.value = freq;
+  osc.type = name==='drums'?'sawtooth':name==='voice'?'sine':'triangle';
+  g.gain.setValueAtTime(0.1, ctx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.5);
+  osc.start(); osc.stop(ctx.currentTime+0.5);
+  
+  setTimeout(() => el.classList.remove('playing'), 500);
+}
+
+// ─── COSMOS CANVAS MODE ───
+function drawCosmosMode() {
+  const canvas = document.getElementById('cosmos-canvas');
+  if (!canvas) return;
+  canvas.width = canvas.offsetWidth || 600;
+  canvas.height = canvas.offsetHeight || 400;
+  const ctx = canvas.getContext('2d');
+  
+  const nebulae = Array.from({length:5}, () => ({
+    x: Math.random()*canvas.width, y: Math.random()*canvas.height,
+    r: 80+Math.random()*100,
+    color: ['#3B0080','#001A5C','#1A4040','#3D0050'][Math.floor(Math.random()*4)],
+    alpha: 0.3+Math.random()*0.3,
+    dx: (Math.random()-0.5)*0.2, dy: (Math.random()-0.5)*0.2,
+  }));
+  
+  const constellations = [
+    [{x:0.1,y:0.2},{x:0.15,y:0.1},{x:0.22,y:0.15},{x:0.18,y:0.25}],
+    [{x:0.7,y:0.3},{x:0.75,y:0.2},{x:0.82,y:0.25},{x:0.78,y:0.35},{x:0.72,y:0.4}],
+    [{x:0.4,y:0.7},{x:0.45,y:0.6},{x:0.5,y:0.65},{x:0.55,y:0.6}],
+  ];
+  
+  function drawFrame() {
+    if (state.currentMode !== 'cosmos') return;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    const t = Date.now()/1000;
+    
+    // Nebulae
+    nebulae.forEach(n => {
+      n.x += n.dx; n.y += n.dy;
+      if (n.x < -n.r) n.x = canvas.width+n.r;
+      if (n.x > canvas.width+n.r) n.x = -n.r;
+      const g = ctx.createRadialGradient(n.x,n.y,0,n.x,n.y,n.r);
+      g.addColorStop(0, n.color+'99');
+      g.addColorStop(1, 'transparent');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(n.x,n.y,n.r,0,Math.PI*2);
+      ctx.fill();
+    });
+    
+    // Constellations
+    constellations.forEach(pts => {
+      const mapped = pts.map(p => ({x:p.x*canvas.width, y:p.y*canvas.height}));
+      ctx.strokeStyle = 'rgba(125,211,252,0.3)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3,6]);
+      ctx.beginPath();
+      mapped.forEach((p,i) => i===0 ? ctx.moveTo(p.x,p.y) : ctx.lineTo(p.x,p.y));
+      ctx.stroke();
+      ctx.setLineDash([]);
+      mapped.forEach(p => {
+        const pulse = 1 + Math.sin(t*2)*0.3;
+        const g2 = ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,6*pulse);
+        g2.addColorStop(0,'rgba(255,255,255,0.9)');
+        g2.addColorStop(1,'rgba(125,211,252,0)');
+        ctx.fillStyle = g2;
+        ctx.beginPath();
+        ctx.arc(p.x,p.y,6*pulse,0,Math.PI*2);
+        ctx.fill();
+      });
+    });
+    
+    // Hand-drawn nebula (if hand tracking)
+    if (state.cameraOn) {
+      const hx = state.handX * canvas.width;
+      const hy = state.handY * canvas.height;
+      const g3 = ctx.createRadialGradient(hx,hy,0,hx,hy,40);
+      g3.addColorStop(0,'rgba(196,255,60,0.4)');
+      g3.addColorStop(1,'transparent');
+      ctx.fillStyle = g3;
+      ctx.beginPath();
+      ctx.arc(hx,hy,40,0,Math.PI*2);
+      ctx.fill();
+    }
+    
+    requestAnimationFrame(drawFrame);
+  }
+  drawFrame();
+}
+
+// ─── CAMERA + MEDIAPIPE ───
+async function toggleCamera() {
+  const btn = document.getElementById('btn-cam');
+  if (state.cameraOn) {
+    if (state.mediaStream) state.mediaStream.getTracks().forEach(t => t.stop());
+    if (state.mpCamera) { try { state.mpCamera.stop(); } catch(e) {} state.mpCamera = null; }
+    state.cameraOn = false;
+    btn.classList.remove('on');
+    document.getElementById('t-cam').textContent = 'OFF';
+    document.getElementById('t-cam').className = 'track-val track-inactive';
+    document.getElementById('cam-label').textContent = '📷 Cámara desactivada';
+    return;
+  }
+  try {
+    // getUserMedia solo existe en contexto seguro: localhost o https
+    const md = navigator.mediaDevices;
+    if (!md || typeof md.getUserMedia !== 'function') {
+      const host = location.hostname;
+      const badHost = host && host !== 'localhost' && host !== '127.0.0.1';
+      const tip = badHost
+        ? 'Usa http://localhost:3000 (no la IP 192.168...)'
+        : 'Abre en Chrome/Edge por http://localhost:3000';
+      document.getElementById('cam-label').textContent = '⚠ Cámara bloqueada — ' + tip;
+      alert('La cámara requiere localhost.\n\nCierra esta pestaña y abre:\n\nhttp://localhost:3000/nuhu-resonance-unified.html\n\n(No uses 192.168.x.x — el navegador bloquea la cámara ahí.)');
+      return;
+    }
+    const stream = await md.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+    state.mediaStream = stream;
+    const video = document.getElementById('video-el');
+    video.srcObject = stream;
+    state.cameraOn = true;
+    btn.classList.add('on');
+    document.getElementById('t-cam').textContent = 'ON';
+    document.getElementById('t-cam').className = 'track-val track-active';
+    document.getElementById('cam-label').textContent = '📷 Tracking activo';
+    startHandTracking();
+  } catch(e) {
+    console.error('Cámara:', e);
+    const msg = e.name === 'NotAllowedError'
+      ? '⚠ Permiso denegado — candado junto a la URL → Cámara → Permitir'
+      : e.name === 'NotFoundError'
+        ? '⚠ No se encontró cámara'
+        : '⚠ Cámara: ' + (e.message || e.name);
+    document.getElementById('cam-label').textContent = msg;
+  }
+}
+
+// Simulated body tracking (in production: MediaPipe Hands/Pose/FaceMesh)
+
+// ═══════════════════════════════════════════
+// GESTOS DE MANOS (MediaPipe Hands + fallback)
+// ═══════════════════════════════════════════
+state.hands = { left: null, right: null, gesture: '—', gestureL: '—', gestureR: '—' };
+state.mpHands = null;
+state.mpCamera = null;
+state.mpReady = false;
+state.lastGestureHit = 0;
+
+/** Clasifica gesto a partir de 21 landmarks MediaPipe (coords normalizadas 0-1) */
+function classifyHandGesture(lm) {
+  if (!lm || lm.length < 21) return 'none';
+  // Dedos extendidos: punta más "arriba" (menor y) que articulación PIP (aprox)
+  // Landmarks: 4 thumb tip, 8 index, 12 middle, 16 ring, 20 pinky
+  // PIP: 3, 6, 10, 14, 18
+  const fingerUp = (tip, pip, mcp) => {
+    // en imagen espejada y crece hacia abajo
+    return lm[tip].y < lm[pip].y - 0.02;
+  };
+  const thumbOut = Math.abs(lm[4].x - lm[2].x) > 0.06;
+  const idx = fingerUp(8, 6, 5);
+  const mid = fingerUp(12, 10, 9);
+  const rng = fingerUp(16, 14, 13);
+  const pnk = fingerUp(20, 18, 17);
+  const count = [idx, mid, rng, pnk].filter(Boolean).length;
+
+  if (count === 0 && !thumbOut) return 'fist';       // puño
+  if (count === 4 && thumbOut) return 'open';       // palma abierta
+  if (count === 4 && !thumbOut) return 'open';
+  if (idx && mid && !rng && !pnk) return 'peace';  // victoria / 2
+  if (idx && !mid && !rng && !pnk) return 'point'; // señalar
+  if (!idx && !mid && !rng && !pnk && thumbOut && lm[4].y < lm[3].y) return 'thumbsup';
+  if (count >= 3) return 'open';
+  if (count === 1 && idx) return 'point';
+  if (count === 2 && idx && mid) return 'peace';
+  return 'partial';
+}
+
+const GESTURE_LABEL = {
+  fist: 'Puño', open: 'Palma', peace: 'Victoria', point: 'Señalar',
+  thumbsup: 'Pulgar+', partial: '…', none: '—'
+};
+
+/** Mapea gesto → nota Simon (0-3) o instrumento */
+function gestureToNote(g) {
+  if (g === 'fist') return 0;      // violeta
+  if (g === 'open') return 1;      // turquesa
+  if (g === 'peace') return 2;     // neón
+  if (g === 'point' || g === 'thumbsup') return 3; // rose
+  return -1;
+}
+
+function onGestureDetected(g) {
+  if (typeof tutorialOnGesture === 'function') tutorialOnGesture(g);
+  const now = Date.now();
+  if (now - state.lastGestureHit < 450) return; // debounce
+  const note = gestureToNote(g);
+  if (note < 0) return;
+  state.lastGestureHit = now;
+  // Simon: solo en turno del jugador
+  if (state.playerTurn && typeof playerHit === 'function') {
+    playerHit(note);
+  }
+  // Director: activar instrumento
+  if (state.currentMode === 'orchestra') {
+    const inst = ['violin', 'piano', 'drums', 'harp'][note];
+    if (typeof activateInstrument === 'function') activateInstrument(inst);
+  }
+}
+
+async function initMediaPipeHands() {
+  if (state.mpReady || typeof Hands === 'undefined') return false;
+  try {
+    const hands = new Hands({
+      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${file}`
+    });
+    hands.setOptions({
+      maxNumHands: 2,
+      modelComplexity: 1,
+      minDetectionConfidence: 0.65,
+      minTrackingConfidence: 0.55
+    });
+    hands.onResults(onHandsResults);
+    state.mpHands = hands;
+    state.mpReady = true;
+    return true;
+  } catch (e) {
+    console.warn('MediaPipe init failed', e);
+    return false;
+  }
+}
+
+function onHandsResults(results) {
+  if (!state.cameraOn) return;
+  const canvas = document.getElementById('tracking-canvas');
+  const video = document.getElementById('video-el');
+  if (!canvas || !video) return;
+  canvas.width = canvas.offsetWidth || 300;
+  canvas.height = canvas.offsetHeight || 200;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  state.hands.left = null;
+  state.hands.right = null;
+  let mainGesture = 'none';
+
+  if (results.multiHandLandmarks && results.multiHandLandmarks.length) {
+    for (let i = 0; i < results.multiHandLandmarks.length; i++) {
+      const lm = results.multiHandLandmarks[i];
+      const label = (results.multiHandedness && results.multiHandedness[i])
+        ? results.multiHandedness[i].label // Left | Right (espejo: Left = mano derecha del usuario)
+        : 'Right';
+      const g = classifyHandGesture(lm);
+      // Video está espejado (scaleX -1): MediaPipe "Left" ≈ mano derecha del usuario en pantalla
+      const isUserRight = label === 'Left';
+      if (isUserRight) {
+        state.hands.right = lm;
+        state.hands.gestureR = g;
+        state.rightArmY = lm[9].y; // middle MCP como proxy altura brazo
+      } else {
+        state.hands.left = lm;
+        state.hands.gestureL = g;
+        state.leftArmY = lm[9].y;
+      }
+      // Mano principal = la más centrada / primera
+      if (i === 0) {
+        state.handX = lm[9].x;
+        state.handY = lm[9].y;
+        mainGesture = g;
+        state.hands.gesture = g;
+      }
+      // Dibujar esqueleto
+      drawHandSkeleton(ctx, lm, canvas.width, canvas.height, g);
+      onGestureDetected(g);
+    }
+  }
+
+  // UI
+  const elH = document.getElementById('t-hands');
+  if (elH) {
+    const L = GESTURE_LABEL[state.hands.gestureL] || '—';
+    const R = GESTURE_LABEL[state.hands.gestureR] || '—';
+    elH.textContent = `L:${L} R:${R}`;
+    elH.className = 'track-val track-active';
+  }
+  const elB = document.getElementById('t-body');
+  if (elB) {
+    elB.textContent = GESTURE_LABEL[mainGesture] || '—';
+    elB.className = 'track-val ' + (mainGesture !== 'none' ? 'track-active' : 'track-inactive');
+  }
+
+  // Indicador en modo orquesta
+  const gi = document.getElementById('gesture-info');
+  if (gi && state.currentMode === 'orchestra') {
+    gi.textContent = mainGesture === 'none'
+      ? 'Muestra la mano a la cámara: Puño · Palma · Victoria · Señalar'
+      : `Gesto: ${GESTURE_LABEL[mainGesture]} → instrumento`;
+  }
+}
+
+function drawHandSkeleton(ctx, lm, w, h, gesture) {
+  const colors = {
+    fist: '#9B79FF', open: '#00E5D4', peace: '#C4FF3C',
+    point: '#FF6B9D', thumbsup: '#FFD166', partial: '#8B7FBF', none: '#8B7FBF'
+  };
+  const col = colors[gesture] || '#9B79FF';
+  // conexiones MediaPipe
+  const edges = [
+    [0,1],[1,2],[2,3],[3,4],
+    [0,5],[5,6],[6,7],[7,8],
+    [5,9],[9,10],[10,11],[11,12],
+    [9,13],[13,14],[14,15],[15,16],
+    [13,17],[17,18],[18,19],[19,20],[0,17]
+  ];
+  ctx.strokeStyle = col;
+  ctx.lineWidth = 2;
+  ctx.globalAlpha = 0.85;
+  edges.forEach(([a, b]) => {
+    ctx.beginPath();
+    ctx.moveTo(lm[a].x * w, lm[a].y * h);
+    ctx.lineTo(lm[b].x * w, lm[b].y * h);
+    ctx.stroke();
+  });
+  lm.forEach((p, i) => {
+    ctx.beginPath();
+    ctx.arc(p.x * w, p.y * h, i % 4 === 0 ? 4 : 2.5, 0, Math.PI * 2);
+    ctx.fillStyle = col;
+    ctx.fill();
+  });
+  // etiqueta gesto
+  ctx.globalAlpha = 1;
+  ctx.font = '600 11px Exo 2, sans-serif';
+  ctx.fillStyle = col;
+  ctx.fillText(GESTURE_LABEL[gesture] || '', lm[0].x * w + 8, lm[0].y * h - 8);
+}
+
+async function startHandTracking() {
+  const ok = await initMediaPipeHands();
+  const video = document.getElementById('video-el');
+  if (ok && state.mpHands && video && typeof Camera !== 'undefined') {
+    try {
+      // Camera util envía frames a Hands
+      if (state.mpCamera) { try { state.mpCamera.stop(); } catch(e) {} }
+      state.mpCamera = new Camera(video, {
+        onFrame: async () => {
+          if (state.cameraOn && state.mpHands) {
+            await state.mpHands.send({ image: video });
+          }
+        },
+        width: 640,
+        height: 480
+      });
+      state.mpCamera.start();
+      document.getElementById('cam-label').textContent = '📷 Gestos de manos activos';
+      return;
+    } catch (e) {
+      console.warn('MP Camera util failed, loop manual', e);
+    }
+  }
+  // Fallback: bucle manual si hay Hands pero no Camera util
+  if (ok && state.mpHands && video) {
+    async function loop() {
+      if (!state.cameraOn) return;
+      try { await state.mpHands.send({ image: video }); } catch(e) {}
+      requestAnimationFrame(loop);
+    }
+    loop();
+    document.getElementById('cam-label').textContent = '📷 Gestos (modo manual)';
+    return;
+  }
+  // Último recurso: simulación (sin MediaPipe cargado)
+  startHandTracking();
+  document.getElementById('cam-label').textContent = '📷 Demo sin MediaPipe (simulado)';
+}
+
+function startFakeTracking() {
+  let frame = 0;
+  function track() {
+    if (!state.cameraOn) return;
+    frame++;
+    const t = Date.now()/1000;
+    state.handX = 0.5 + Math.sin(t*0.7)*0.3;
+    state.handY = 0.5 + Math.sin(t*0.5)*0.3;
+    state.rightArmY = 0.5 + Math.sin(t*0.8)*0.4;
+    state.leftArmY = 0.5 + Math.sin(t*0.6+1)*0.4;
+    state.headTilt = Math.sin(t*0.4)*0.3;
+    state.mouthOpen = Math.sin(t*2) > 0.7;
+    document.getElementById('t-hands').textContent =
+      `L:${(state.leftArmY*100).toFixed(0)} R:${(state.rightArmY*100).toFixed(0)}`;
+    document.getElementById('t-hands').className = 'track-val track-active';
+    document.getElementById('t-body').textContent = `Tilt:${(state.headTilt*100).toFixed(0)}`;
+    document.getElementById('t-body').className = 'track-val track-active';
+    document.getElementById('t-eyes').textContent = state.mouthOpen ? 'Activo' : 'Cerrado';
+    document.getElementById('t-eyes').className = 'track-val ' + (state.mouthOpen?'track-active':'track-inactive');
+    if (state.playerTurn && frame % 40 === 0) {
+      if (state.rightArmY < 0.25) playerHit(0);
+      else if (state.rightArmY > 0.75) playerHit(2);
+    }
+    drawTrackingSkeleton();
+    requestAnimationFrame(track);
+  }
+  track();
+}
+
+
+function drawTrackingSkeleton() {
+  const canvas = document.getElementById('tracking-canvas');
+  const video = document.getElementById('video-el');
+  if (!canvas || !video) return;
+  canvas.width = canvas.offsetWidth || 300;
+  canvas.height = canvas.offsetHeight || 200;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  
+  const w = canvas.width, h = canvas.height;
+  
+  // Hand landmark dots
+  const hx = state.handX * w, hy = state.handY * h;
+  ctx.fillStyle = '#C4FF3C';
+  ctx.beginPath(); ctx.arc(hx, hy, 6, 0, Math.PI*2); ctx.fill();
+  
+  // Body skeleton lines
+  const cx = w/2, cy = h/2;
+  const armR = state.rightArmY;
+  ctx.strokeStyle = '#9B79FF';
+  ctx.lineWidth = 2;
+  ctx.globalAlpha = 0.7;
+  
+  // Head
+  ctx.beginPath(); ctx.arc(cx, cy-40, 12, 0, Math.PI*2); ctx.stroke();
+  // Spine
+  ctx.beginPath(); ctx.moveTo(cx,cy-28); ctx.lineTo(cx,cy+10); ctx.stroke();
+  // Arms
+  ctx.beginPath();
+  ctx.moveTo(cx,cy-20);
+  ctx.lineTo(cx+40, cy-20 + armR*40);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx,cy-20);
+  ctx.lineTo(cx-40, cy-20 + state.leftArmY*40);
+  ctx.stroke();
+  
+  ctx.globalAlpha = 1;
+}
+
+// ─── VOICE ───
+async function toggleVoice() {
+  const btn = document.getElementById('btn-voice');
+  if (state.voiceOn) {
+    if (state.voiceStream) state.voiceStream.getTracks().forEach(t => t.stop());
+    state.voiceOn = false;
+    btn.classList.remove('on');
+    document.getElementById('t-voice').textContent = '---';
+    document.getElementById('t-voice').className = 'track-val track-inactive';
+    return;
+  }
+  try {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      document.getElementById('t-voice').textContent = 'localhost';
+      alert('Micrófono requiere http://localhost:3000 (no uses la IP 192.168)');
+      return;
+    }
+    const stream = await navigator.mediaDevices.getUserMedia({audio:true, video:false});
+    state.voiceStream = stream;
+    const ctx2 = getAudio();
+    const src = ctx2.createMediaStreamSource(stream);
+    const analyser = ctx2.createAnalyser();
+    analyser.fftSize = 64;
+    src.connect(analyser);
+    state.voiceAnalyser = analyser;
+    state.voiceOn = true;
+    btn.classList.add('on');
+    document.getElementById('t-voice').textContent = 'ON';
+    document.getElementById('t-voice').className = 'track-val track-active';
+    animateVoice();
+    
+    // Voice → Simon: loud voice = hit note
+    setInterval(() => {
+      if (!state.voiceOn || !state.voiceAnalyser) return;
+      const data = new Uint8Array(state.voiceAnalyser.frequencyBinCount);
+      state.voiceAnalyser.getByteFrequencyData(data);
+      const avg = data.reduce((a,b)=>a+b,0)/data.length;
+      if (avg > 30 && state.playerTurn) {
+        // Map volume to note
+        const noteIdx = Math.floor((avg/64)*4) % 4;
+        playerHit(noteIdx);
+      }
+    }, 500);
+  } catch(e) {
+    console.error('Mic:', e);
+    document.getElementById('t-voice').textContent = location.protocol === 'file:' ? 'file://' : 'ERROR';
+    if (location.protocol === 'file:') {
+      alert('Micrófono y cámara requieren http://localhost\nEjecuta: python3 -m http.server 8080');
+    }
+  }
+}
+
+function animateVoice() {
+  const wrap = document.getElementById('voice-bars');
+  if (!wrap.querySelector('.voice-bar')) {
+    for (let i = 0; i < 20; i++) {
+      const b = document.createElement('div');
+      b.className = 'voice-bar';
+      wrap.appendChild(b);
+    }
+  }
+  const bars = wrap.querySelectorAll('.voice-bar');
+  function frame() {
+    if (!state.voiceOn) return;
+    if (state.voiceAnalyser) {
+      const data = new Uint8Array(state.voiceAnalyser.frequencyBinCount);
+      state.voiceAnalyser.getByteFrequencyData(data);
+      bars.forEach((b,i) => {
+        const val = (data[i] || 0) / 255;
+        b.style.height = (3 + val * 34) + 'px';
+        b.style.background = `hsl(${260+val*100},70%,60%)`;
+      });
+    }
+    requestAnimationFrame(frame);
+  }
+  frame();
+}
+
+// ─── ACCESSIBILITY ───
+function toggleHaptic() {
+  state.hapticOn = !state.hapticOn;
+  document.getElementById('btn-hap').classList.toggle('on', state.hapticOn);
+  if (state.hapticOn && navigator.vibrate) navigator.vibrate(100);
+}
+
+function toggleLowStim() {
+  state.lowStim = !state.lowStim;
+  document.getElementById('btn-low').classList.toggle('on', state.lowStim);
+  document.body.style.filter = state.lowStim ? 'saturate(0.5) brightness(0.8)' : '';
+}
+
+function toggleContrast() {
+  state.highContrast = !state.highContrast;
+  document.getElementById('btn-dark').classList.toggle('on', state.highContrast);
+  document.documentElement.style.setProperty('--void', state.highContrast ? '#000' : '#040410');
+  document.documentElement.style.setProperty('--white', state.highContrast ? '#FFFFFF' : '#F0EEFF');
+}
+
+// ─── BREATHING ───
+function initBreathe() {
+  const guides = ['breathe-circle','calm-breathe'];
+  guides.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    let phase = 0; // 0=inhale, 1=hold, 2=exhale
+    const phases = [
+      {text:'INHALA\nsuave', dur:4000},
+      {text:'SOSTÉN\n🐉', dur:2000},
+      {text:'EXHALA\nlento', dur:4000},
+      {text:'PAUSA\n✨', dur:2000},
+    ];
+    function nextPhase() {
+      el.innerHTML = phases[phase].text.replace('\n','<br>');
+      setTimeout(() => {
+        phase = (phase+1) % phases.length;
+        nextPhase();
+      }, phases[phase].dur);
+    }
+    nextPhase();
+  });
+}
+
+// ─── START FLOW ───
+document.getElementById('start-btn').addEventListener('click', () => {
+  getAudio();
+  document.getElementById('intro').classList.add('fade-out');
+  setTimeout(() => {
+    document.getElementById('intro').style.display = 'none';
+    document.getElementById('app').classList.add('visible');
+    // Start dragon animations
+    drawDragon('dragon-canvas');
+    startOrchScoring();
+    initBreathe();
+    // Welcome sound
+    setTimeout(() => playChord([261,329,392], 1.5), 300);
+    // Tutorial de gestos la primera vez
+    try {
+      if (!localStorage.getItem('nuhu_tutorial_done')) {
+        setTimeout(() => openGestureTutorial(), 1600);
+      }
+    } catch(e) {}
+
+    setTimeout(() => playAmbient('bg-reencuentro', 0.25), 800);
+  }, 1000);
+});
+
+// ─── INIT ───
+window.addEventListener('load', () => {
+  initStars();
+  // Particle style
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes particleFly {
+      0% { opacity:1; transform: scale(1); }
+      100% { opacity:0; transform: scale(0); }
+    }
+  `;
+  document.head.appendChild(style);
+  
+  // Voice bars init
+  const wrap = document.getElementById('voice-bars');
+  for (let i = 0; i < 20; i++) {
+    const b = document.createElement('div');
+    b.className = 'voice-bar';
+    b.style.height = (3 + Math.random()*5) + 'px';
+    wrap.appendChild(b);
+  }
+});
+
+window.addEventListener('resize', () => {
+  const c = document.getElementById('stars-canvas');
+  c.width = window.innerWidth; c.height = window.innerHeight;
+});
+
+// ═══════════════════════════════════════════
+// SANTUARIO 3D — se desbloquea al eclosionar el huevo
+// (Three.js — dragón procedural por ahora; listo para
+//  reemplazar por tu modelo de Blender exportado en .glb)
+// ═══════════════════════════════════════════
+const S = {
+  ready: false, scene: null, camera: null, renderer: null,
+  dragon: null, ground: null, orbs: [], joy: { active: false, x: 0, y: 0 },
+  keys: {}, hunger: 30, orbCount: 0, animId: null, clock: null
+};
+
+function enterSanctuary() {
+  document.getElementById('santuario-locked').style.display = 'none';
+  document.getElementById('sanct-hud').style.display = 'flex';
+  document.getElementById('sanct-msg').style.display = 'block';
+  document.getElementById('sanct-joystick').style.display = 'block';
+  document.getElementById('sanct-hint').style.display = 'block';
+  if (!S.ready) {
+    initSanctuaryScene();
+    S.ready = true;
+  }
+  if (!S.animId) animateSanctuary();
+}
+
+function initSanctuaryScene() {
+  const canvas = document.getElementById('santuario-canvas');
+  const wrap = document.getElementById('santuario-mode');
+  S.clock = new THREE.Clock();
+
+  S.scene = new THREE.Scene();
+  S.scene.background = new THREE.Color(0x07071a);
+  S.scene.fog = new THREE.FogExp2(0x0d0d2b, 0.045);
+
+  S.camera = new THREE.PerspectiveCamera(60, wrap.clientWidth / wrap.clientHeight, 0.1, 500);
+  S.camera.position.set(0, 5, 10);
+
+  S.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+  S.renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  S.renderer.setSize(wrap.clientWidth, wrap.clientHeight);
+
+  S.scene.add(new THREE.AmbientLight(0x9B79FF, 0.7));
+  const sun = new THREE.DirectionalLight(0xC4FF3C, 1.1);
+  sun.position.set(8, 14, 6);
+  S.scene.add(sun);
+  const fill = new THREE.PointLight(0x9B79FF, 0.8, 40);
+  fill.position.set(-6, 4, -4);
+  S.scene.add(fill);
+
+  buildStarfieldSanct();
+  buildGroundSanct();
+  buildSanctDragon();
+  spawnFoodOrbs(10);
+
+  window.addEventListener('resize', onResizeSanct);
+  initSanctInput();
+}
+
+function onResizeSanct() {
+  if (!S.renderer) return;
+  const wrap = document.getElementById('santuario-mode');
+  S.camera.aspect = wrap.clientWidth / wrap.clientHeight;
+  S.camera.updateProjectionMatrix();
+  S.renderer.setSize(wrap.clientWidth, wrap.clientHeight);
+}
+
+function buildStarfieldSanct() {
+  const geo = new THREE.BufferGeometry();
+  const verts = [];
+  for (let i = 0; i < 1500; i++) {
+    verts.push((Math.random()-0.5)*200, Math.random()*100, (Math.random()-0.5)*200);
+  }
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+  const mat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.4, sizeAttenuation: true });
+  S.scene.add(new THREE.Points(geo, mat));
+}
+
+function buildGroundSanct() {
+  const geo = new THREE.CylinderGeometry(16, 14, 1.4, 8);
+  const mat = new THREE.MeshLambertMaterial({ color: 0x1a1440 });
+  S.ground = new THREE.Mesh(geo, mat);
+  S.ground.position.y = -0.7;
+  S.scene.add(S.ground);
+}
+
+function buildSanctDragon() {
+  const group = new THREE.Group();
+  S.dragonWings = [];
+
+  // Prefer optimized GLB; fall back to procedural if load fails
+  const loader = typeof THREE.GLTFLoader !== 'undefined' ? new THREE.GLTFLoader() : null;
+  const tryPaths = ['nuhu_dragon_low.glb', 'nuhu_dragon_lod.glb', 'nuhu_dragon_web.glb'];
+
+  function attachProcedural() {
+    const c = { body: 0x6B4FD8, accent: 0x9B79FF, glyph: 0xC4FF3C };
+    const bodyMat = new THREE.MeshPhongMaterial({ color: c.body, emissive: 0x2a1a6b, emissiveIntensity: 0.4, shininess: 60 });
+    const body = new THREE.Mesh(new THREE.DodecahedronGeometry(0.85, 0), bodyMat);
+    group.add(body);
+    const head = new THREE.Mesh(new THREE.OctahedronGeometry(0.5, 0), bodyMat);
+    head.position.set(0, 0.85, 0.5);
+    head.scale.set(1, 0.85, 1);
+    group.add(head);
+    [-0.18, 0.18].forEach(x => {
+      const eye = new THREE.Mesh(new THREE.SphereGeometry(0.08, 6, 6), new THREE.MeshBasicMaterial({ color: c.glyph }));
+      eye.position.set(x, 1.0, 0.9);
+      group.add(eye);
+    });
+    [-1, 1].forEach(side => {
+      const wingGeo = new THREE.BufferGeometry();
+      wingGeo.setAttribute('position', new THREE.Float32BufferAttribute(new Float32Array([
+        0,0,0,  side*1.5, 0.7, 0.1,  side*1.2, 0.1, 0.5,
+        0,0,0,  side*1.2, 0.1, 0.5,  side*0.5, -0.2, 0.35
+      ]), 3));
+      wingGeo.computeVertexNormals();
+      const wingMat = new THREE.MeshPhongMaterial({ color: c.accent, transparent: true, opacity: 0.75, side: THREE.DoubleSide });
+      const wing = new THREE.Mesh(wingGeo, wingMat);
+      wing.position.set(0, 0.25, 0);
+      wing.userData = { phase: side < 0 ? 0 : Math.PI, side };
+      group.add(wing);
+      S.dragonWings.push(wing);
+    });
+    const tail = new THREE.Mesh(new THREE.ConeGeometry(0.13, 1, 5), bodyMat);
+    tail.position.set(0, -0.25, -0.8);
+    tail.rotation.x = 0.5;
+    group.add(tail);
+    const orb = new THREE.Mesh(
+      new THREE.IcosahedronGeometry(0.25, 1),
+      new THREE.MeshPhongMaterial({ color: c.glyph, emissive: c.accent, emissiveIntensity: 1, transparent: true, opacity: 0.9 })
+    );
+    orb.position.set(0, 0.05, 0.75);
+    group.add(orb);
+    group.scale.set(1.3, 1.3, 1.3);
+  }
+
+  function onGltf(gltf) {
+    const model = gltf.scene;
+    // Normalize size: fit roughly to unit sphere ~1.5
+    const box = new THREE.Box3().setFromObject(model);
+    const size = new THREE.Vector3();
+    box.getSize(size);
+    const maxDim = Math.max(size.x, size.y, size.z) || 1;
+    const s = 2.4 / maxDim;
+    model.scale.setScalar(s);
+    box.setFromObject(model);
+    const center = new THREE.Vector3();
+    box.getCenter(center);
+    model.position.sub(center);
+    model.position.y += 0.3;
+    model.traverse(obj => {
+      if (obj.isMesh) {
+        obj.castShadow = false;
+        obj.receiveShadow = false;
+        if (obj.material) {
+          // Tint toward ÑUHU violet if material is plain
+          if (obj.material.color) obj.material.color.setHex(0x6B4FD8);
+          if (obj.material.emissive) {
+            obj.material.emissive.setHex(0x2a1a6b);
+            obj.material.emissiveIntensity = 0.35;
+          }
+        }
+      }
+    });
+    group.add(model);
+    S.dragonModel = model;
+  }
+
+  function tryLoad(i) {
+    if (!loader || i >= tryPaths.length) {
+      console.warn('GLB not available, using procedural dragon');
+      attachProcedural();
+      return;
+    }
+    loader.load(
+      tryPaths[i],
+      onGltf,
+      undefined,
+      () => tryLoad(i + 1)
+    );
+  }
+
+  tryLoad(0);
+  group.position.set(0, 1.2, 0);
+  S.scene.add(group);
+  S.dragon = { group, vel: new THREE.Vector3(), animPhase: 0, eating: 0 };
+}
+
+function spawnFoodOrbs(count) {
+  S.orbs.forEach(o => S.scene.remove(o.mesh));
+  S.orbs = [];
+  for (let i = 0; i < count; i++) {
+    const mesh = new THREE.Mesh(
+      new THREE.IcosahedronGeometry(0.28, 0),
+      new THREE.MeshPhongMaterial({ color: 0xFFD166, emissive: 0xFFD166, emissiveIntensity: 0.7 })
+    );
+    const ang = (i / count) * Math.PI * 2;
+    const r = 5 + Math.random() * 7;
+    mesh.position.set(Math.cos(ang) * r, 0.5 + Math.random() * 1.5, Math.sin(ang) * r);
+    S.scene.add(mesh);
+    S.orbs.push({ mesh, phase: Math.random() * 10 });
+  }
+}
+
+function initSanctInput() {
+  const joyBase = document.getElementById('sanct-joystick');
+  const joyKnob = document.getElementById('sanct-joystick-knob');
+  let joyId = null;
+
+  function setKnob(dx, dy) {
+    const max = 32;
+    const dist = Math.min(max, Math.hypot(dx, dy));
+    const ang = Math.atan2(dy, dx);
+    joyKnob.style.transform = `translate(-50%,-50%) translate(${Math.cos(ang)*dist}px, ${Math.sin(ang)*dist}px)`;
+    S.joy.x = Math.cos(ang) * (dist / max);
+    S.joy.y = Math.sin(ang) * (dist / max);
+  }
+  function resetKnob() {
+    joyKnob.style.transform = 'translate(-50%,-50%)';
+    S.joy.x = 0; S.joy.y = 0; S.joy.active = false; joyId = null;
+  }
+  joyBase.addEventListener('pointerdown', e => {
+    joyId = e.pointerId; S.joy.active = true;
+    joyBase.setPointerCapture(joyId);
+  });
+  joyBase.addEventListener('pointermove', e => {
+    if (e.pointerId !== joyId || !S.joy.active) return;
+    const rect = joyBase.getBoundingClientRect();
+    setKnob(e.clientX - (rect.left + rect.width/2), e.clientY - (rect.top + rect.height/2));
+  });
+  ['pointerup','pointercancel','pointerleave'].forEach(ev => {
+    joyBase.addEventListener(ev, e => { if (e.pointerId === joyId) resetKnob(); });
+  });
+
+  window.addEventListener('keydown', e => { S.keys[e.key.toLowerCase()] = true; });
+  window.addEventListener('keyup', e => { S.keys[e.key.toLowerCase()] = false; });
+}
+
+function updateSanctDragon(dt) {
+  if (!S.dragon) return;
+  let dx = S.joy.x, dz = S.joy.y;
+  if (S.keys['arrowup'] || S.keys['w']) dz -= 1;
+  if (S.keys['arrowdown'] || S.keys['s']) dz += 1;
+  if (S.keys['arrowleft'] || S.keys['a']) dx -= 1;
+  if (S.keys['arrowright'] || S.keys['d']) dx += 1;
+
+  const len = Math.hypot(dx, dz);
+  const speed = 4.2;
+  if (len > 0.05) {
+    dx /= len; dz /= len;
+    S.dragon.group.position.x += dx * speed * dt;
+    S.dragon.group.position.z += dz * speed * dt;
+    const targetAngle = Math.atan2(dx, dz);
+    S.dragon.group.rotation.y += (targetAngle - S.dragon.group.rotation.y) * 0.15;
+  }
+
+  // Keep on the platform
+  const r = Math.hypot(S.dragon.group.position.x, S.dragon.group.position.z);
+  if (r > 13) {
+    const scale = 13 / r;
+    S.dragon.group.position.x *= scale;
+    S.dragon.group.position.z *= scale;
+  }
+
+  // Idle bob + wing flap
+  S.dragon.animPhase += dt * (len > 0.05 ? 6 : 2.2);
+  S.dragon.group.position.y = 1.2 + Math.sin(S.dragon.animPhase) * 0.08 - (S.dragon.eating > 0 ? 0.15 : 0);
+  if (S.dragonWings) {
+    S.dragonWings.forEach(w => {
+      w.rotation.z = Math.sin(S.dragon.animPhase * 2 + w.userData.phase) * 0.35 * w.userData.side;
+    });
+  }
+  if (S.dragon.eating > 0) {
+    S.dragon.eating -= dt;
+    const s = 1.3 + Math.sin(S.dragon.eating * 20) * 0.06;
+    S.dragon.group.scale.set(s, s, s);
+  }
+
+  // Camera follows
+  const targetCamPos = new THREE.Vector3(
+    S.dragon.group.position.x, S.dragon.group.position.y + 4.5, S.dragon.group.position.z + 8
+  );
+  S.camera.position.lerp(targetCamPos, 0.06);
+  S.camera.lookAt(S.dragon.group.position.x, S.dragon.group.position.y + 0.5, S.dragon.group.position.z);
+}
+
+function updateFoodOrbs(dt) {
+  if (!S.dragon) return;
+  S.orbs.forEach(o => {
+    o.phase += dt;
+    o.mesh.rotation.y += dt * 1.5;
+    o.mesh.position.y += Math.sin(o.phase * 2) * 0.003;
+    const d = o.mesh.position.distanceTo(S.dragon.group.position);
+    if (d < 1.2) {
+      S.scene.remove(o.mesh);
+      o.eaten = true;
+      S.dragon.eating = 0.4;
+      S.orbCount++;
+      S.hunger = Math.min(100, S.hunger + 8);
+      document.getElementById('sanct-orb-count').textContent = S.orbCount;
+      document.getElementById('sanct-hunger-fill').style.width = S.hunger + '%';
+      document.getElementById('sanct-msg').textContent = ['¡Ñam!', 'Nexo está feliz', 'Le encanta esa estrella'][Math.floor(Math.random()*3)];
+      playSuccess();
+      addXP(2);
+    }
+  });
+  S.orbs = S.orbs.filter(o => !o.eaten);
+  if (S.orbs.length < 3) spawnFoodOrbs(10);
+}
+
+function animateSanctuary() {
+  S.animId = requestAnimationFrame(animateSanctuary);
+  if (state.currentMode !== 'santuario' || !S.renderer) return;
+  const dt = Math.min(0.05, S.clock.getDelta());
+  updateSanctDragon(dt);
+  updateFoodOrbs(dt);
+  S.renderer.render(S.scene, S.camera);
+}
+
+function stopAllAmbient() {
+  ['bg-forest','bg-breath','bg-hollow','bg-reencuentro'].forEach(id => {
+    const a = document.getElementById(id);
+    if (a) { a.pause(); a.currentTime = 0; }
+  });
+}
+function playAmbient(id, vol) {
+  const a = document.getElementById(id);
+  if (!a) return;
+  a.volume = vol || 0.3;
+  a.play().catch(()=>{});
+}
+
+
+// ═══════════════════════════════════════════
+// TUTORIAL EN PANTALLA — Gestos de manos
+// ═══════════════════════════════════════════
+const TUTORIAL_STEPS = [
+  {
+    title: 'Gestos ÑUHU',
+    emoji: '🐉',
+    desc: 'Te guiaré por los gestos de manos. Enciende la cámara y colócate frente a ella con buena luz.',
+    hint: 'Usa http://localhost:3000 (no la IP 192.168). Chrome o Edge recomendado.',
+    waitGesture: null
+  },
+  {
+    title: 'Cámara',
+    emoji: '📷',
+    desc: 'Activa la cámara con el botón del panel lateral. Acepta el permiso del navegador.',
+    hint: 'Cuando veas el video, pulsa Siguiente. El esqueleto de tu mano aparecerá al detectarla.',
+    waitGesture: null,
+    requireCam: true
+  },
+  {
+    title: 'Puño',
+    emoji: '✊',
+    desc: 'Cierra la mano en un puño frente a la cámara.',
+    hint: 'Gesto → nota violeta / violín. Mantén el puño 1 segundo.',
+    waitGesture: 'fist'
+  },
+  {
+    title: 'Palma abierta',
+    emoji: '🖐️',
+    desc: 'Abre la mano, dedos extendidos, palma hacia la cámara.',
+    hint: 'Gesto → nota turquesa / piano.',
+    waitGesture: 'open'
+  },
+  {
+    title: 'Victoria',
+    emoji: '✌️',
+    desc: 'Levanta índice y corazón (signo de paz / victoria).',
+    hint: 'Gesto → nota neón / percusión.',
+    waitGesture: 'peace'
+  },
+  {
+    title: 'Señalar',
+    emoji: '☝️',
+    desc: 'Solo el dedo índice hacia arriba o hacia la cámara.',
+    hint: 'Gesto → nota rosa / arpa. También vale el pulgar arriba 👍.',
+    waitGesture: 'point'
+  },
+  {
+    title: '¡Listo!',
+    emoji: '✨',
+    desc: 'Ya puedes jugar Simon Musical o Director de Orquesta con gestos. El botón «Tutorial» abajo a la derecha vuelve a abrir esta guía.',
+    hint: 'Consejo: pausa un momento entre gestos para que el juego los registre bien.',
+    waitGesture: null
+  }
+];
+
+const tutorial = {
+  open: false,
+  step: 0,
+  autoTimer: null,
+  gestureArmed: false
+};
+
+function openGestureTutorial() {
+  tutorial.open = true;
+  tutorial.step = 0;
+  document.getElementById('gesture-tutorial').classList.add('on');
+  renderTutorialStep();
+  // Intentar cámara si aún no está
+  if (!state.cameraOn && typeof toggleCamera === 'function') {
+    // no auto-toggle (requiere gesto de usuario en algunos browsers); solo recordar
+  }
+}
+
+function closeGestureTutorial(skipped) {
+  tutorial.open = false;
+  tutorial.gestureArmed = false;
+  if (tutorial.autoTimer) clearTimeout(tutorial.autoTimer);
+  document.getElementById('gesture-tutorial').classList.remove('on');
+  try { localStorage.setItem('nuhu_tutorial_done', skipped ? 'skipped' : 'done'); } catch(e) {}
+}
+
+function renderTutorialStep() {
+  const s = TUTORIAL_STEPS[tutorial.step];
+  if (!s) { closeGestureTutorial(false); return; }
+  document.getElementById('tut-step-label').textContent =
+    'Paso ' + (tutorial.step + 1) + ' de ' + TUTORIAL_STEPS.length;
+  document.getElementById('tut-title').textContent = s.title;
+  document.getElementById('tut-emoji').textContent = s.emoji;
+  document.getElementById('tut-desc').textContent = s.desc;
+  document.getElementById('tut-hint').textContent = s.hint;
+  const det = document.getElementById('tut-detect');
+  det.textContent = '';
+  det.className = 'tut-detect';
+
+  // progress dots
+  const prog = document.getElementById('tut-progress');
+  prog.innerHTML = '';
+  TUTORIAL_STEPS.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'tut-dot' + (i === tutorial.step ? ' on' : (i < tutorial.step ? ' done' : ''));
+    prog.appendChild(d);
+  });
+
+  const nextBtn = document.getElementById('tut-next');
+  if (tutorial.step >= TUTORIAL_STEPS.length - 1) {
+    nextBtn.textContent = '¡A jugar!';
+    nextBtn.classList.add('success');
+  } else {
+    nextBtn.textContent = s.waitGesture ? 'Esperando gesto…' : 'Siguiente';
+    nextBtn.classList.remove('success');
+  }
+
+  tutorial.gestureArmed = !!s.waitGesture;
+}
+
+function tutorialNext() {
+  if (tutorial.step >= TUTORIAL_STEPS.length - 1) {
+    closeGestureTutorial(false);
+    return;
+  }
+  // Si el paso pide cámara y no está, avisar pero permitir avanzar
+  const s = TUTORIAL_STEPS[tutorial.step];
+  if (s.requireCam && !state.cameraOn) {
+    document.getElementById('tut-detect').textContent =
+      'Puedes seguir y activar la cámara después.';
+  }
+  tutorial.step++;
+  renderTutorialStep();
+}
+
+/** Llamado desde onHandsResults / onGestureDetected */
+function tutorialOnGesture(g) {
+  if (!tutorial.open || !tutorial.gestureArmed) return;
+  const s = TUTORIAL_STEPS[tutorial.step];
+  if (!s || !s.waitGesture) return;
+
+  // point acepta también thumbsup
+  const match = (s.waitGesture === 'point')
+    ? (g === 'point' || g === 'thumbsup')
+    : (g === s.waitGesture);
+
+  const det = document.getElementById('tut-detect');
+  if (match) {
+    det.textContent = '✓ ' + (GESTURE_LABEL[g] || g) + ' detectado';
+    det.className = 'tut-detect ok';
+    tutorial.gestureArmed = false;
+    const nextBtn = document.getElementById('tut-next');
+    nextBtn.textContent = 'Siguiente';
+    if (typeof playSuccess === 'function') playSuccess();
+    if (tutorial.autoTimer) clearTimeout(tutorial.autoTimer);
+    tutorial.autoTimer = setTimeout(() => tutorialNext(), 900);
+  } else if (g && g !== 'none' && g !== 'partial') {
+    det.textContent = 'Visto: ' + (GESTURE_LABEL[g] || g) + ' — prueba el gesto de este paso';
+    det.className = 'tut-detect';
+  }
+}
+
+// Enganchar al detector de gestos existente
+(function hookTutorialGesture() {
+  const prev = window.onGestureDetected;
+  // onGestureDetected is a function declaration — wrap by reassignment after load
+  const _orig = typeof onGestureDetected === 'function' ? onGestureDetected : null;
+  window._nuhuOrigGesture = _orig;
+})();
+
+</script>
+
+<!-- Ambient music for Sanctuary / Post-crisis (ÑUHU tracks) -->
+<audio id="bg-forest" loop preload="auto" src="nuhu_forest.mp3"></audio>
+<audio id="bg-breath" loop preload="auto" src="nuhu_breathings.mp3"></audio>
+<audio id="bg-hollow" loop preload="auto" src="nuhu_hollow.mp3"></audio>
+<audio id="bg-reencuentro" loop preload="auto" src="reencuentro_suave.mp3"></audio>
+
+
+<!-- Tutorial gestos de manos -->
+<div id="gesture-tutorial" role="dialog" aria-modal="true" aria-labelledby="tut-title">
+  <div class="tut-card">
+    <div class="tut-step-num" id="tut-step-label">Paso 1 de 6</div>
+    <div class="tut-title" id="tut-title">Bienvenida</div>
+    <div class="tut-emoji" id="tut-emoji">🐉</div>
+    <div class="tut-desc" id="tut-desc"></div>
+    <div class="tut-hint" id="tut-hint"></div>
+    <div class="tut-detect" id="tut-detect"></div>
+    <div class="tut-progress" id="tut-progress"></div>
+    <div class="tut-actions">
+      <button type="button" class="tut-btn ghost" id="tut-skip" onclick="closeGestureTutorial(true)">Saltar</button>
+      <button type="button" class="tut-btn" id="tut-next" onclick="tutorialNext()">Siguiente</button>
+    </div>
+  </div>
+</div>
+<button type="button" id="btn-tutorial" onclick="openGestureTutorial()" title="Tutorial de gestos">🖐 Tutorial</button>
+
+</body>
+</html>

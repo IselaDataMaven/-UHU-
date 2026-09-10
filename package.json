@@ -1,0 +1,14 @@
+{
+  "name": "nuhu-resonance",
+  "version": "1.1.0",
+  "description": "ÑUHU Resonance — Dragon Sanctuary",
+  "private": true,
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js",
+    "postinstall": "node -e \"console.log('\\n  Listo. Ejecuta: npm run dev\\n  Luego abre http://localhost:3000\\n')\""
+  },
+  "engines": {
+    "node": ">=16"
+  }
+}

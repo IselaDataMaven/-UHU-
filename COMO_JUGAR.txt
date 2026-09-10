@@ -1,0 +1,24 @@
+ÑUHU RESONANCE — Cómo jugar
+===========================
+
+1. Descomprime este ZIP en una carpeta.
+2. Abre terminal / PowerShell DENTRO de esa carpeta.
+3. Ejecuta:
+
+   npm install
+   npm run dev
+
+4. Abre Chrome o Edge:
+
+   http://localhost:3000
+
+5. Elige:
+   - Dragon Sanctuary (aventura + portada)
+   - Resonance Unified (Simon, gestos, tutorial)
+
+IMPORTANTE cámara:
+  Usa localhost, NO http://192.168...
+
+Sin Node:
+  npx --yes serve -l 3000
+  → http://localhost:3000/nuhu-resonance-unified.html

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ÑUHU Resonance</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;
+background:radial-gradient(ellipse at 50% 30%,#1a0a3e 0%,#04020e 60%,#000 100%);
+color:#e2d9f3;font-family:system-ui,sans-serif;padding:24px;text-align:center}
+img{width:min(200px,48vw);filter:drop-shadow(0 0 28px #9B79FF)}
+h1{font-size:1.35rem;letter-spacing:.18em;color:#c084fc}
+p{color:#9d8ec7;font-size:.9rem;max-width:400px;line-height:1.5}
+.links{display:flex;flex-direction:column;gap:12px;width:min(360px,100%);margin-top:8px}
+a{display:block;padding:16px 20px;border-radius:16px;border:1px solid rgba(124,58,237,.5);
+background:rgba(12,6,36,.75);color:#e2d9f3;text-decoration:none;letter-spacing:.06em;transition:.2s}
+a:hover{background:rgba(124,58,237,.28);box-shadow:0 0 24px rgba(124,58,237,.35)}
+a span{display:block;font-size:.75rem;color:#9d8ec7;margin-top:4px;letter-spacing:0}
+.ok{font-size:.75rem;color:#06b6d4;margin-top:12px}
+</style>
+</head>
+<body>
+<img src="nuhu_logo.png" alt="ÑUHU">
+<h1>ÑUHU RESONANCE</h1>
+<p>Servidor listo. Elige un modo para jugar.</p>
+<div class="links">
+  <a href="nuhu-aventura-vr.html">🐉 Dragon Sanctuary · Aventura
+    <span>Portada · zonas · WebXR · música</span>
+  </a>
+  <a href="nuhu-resonance-unified.html">🎵 Resonance Unified
+    <span>Simon · gestos de manos · tutorial · calma</span>
+  </a>
+</div>
+<p class="ok">npm install → npm run dev → http://localhost:3000</p>
+</body>
+</html>

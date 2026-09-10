@@ -1,0 +1,2374 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#04020e">
+<title>ÑUHU — Dragon Sanctuary · El Despertar del Nexo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --void:#04020e;--deep:#0a0520;--surface:#110a2a;--card:#160d33;
+  --border:#2a1a5e;--acc1:#7c3aed;--acc2:#a855f7;--acc3:#e879f9;
+  --gold:#f59e0b;--teal:#06b6d4;--neon:#39ff14;--nebula:#c084fc;
+  --txt:#e2d9f3;--muted:#9d8ec7;
+  --void-pup:#1a1a3e;--nebula-pup:#7c3aed;--crystal-pup:#40e0d0;--neon-pup:#39ff14;
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--void);color:var(--txt);font-family:'Segoe UI',system-ui,sans-serif}
+canvas{display:block}
+
+/* ─── LOADING SCREEN ─── */
+#loading{position:fixed;inset:0;background:var(--void);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .8s}
+#loading.fade{opacity:0;pointer-events:none}
+.load-orb{width:100px;height:100px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#e0aaff,#7c3aed);animation:pulse 2s ease-in-out infinite;margin-bottom:24px}
+@keyframes pulse{0%,100%{box-shadow:0 0 20px #7c3aed40,0 0 60px #7c3aed20}50%{box-shadow:0 0 60px #c084fc80,0 0 120px #7c3aed40}}
+.load-title{font-size:clamp(22px,5vw,48px);letter-spacing:8px;font-weight:700;color:var(--nebula);text-shadow:0 0 40px rgba(192,132,252,.5);margin-bottom:6px}
+.load-sub{font-size:11px;letter-spacing:4px;color:var(--muted);margin-bottom:32px}
+.load-bar-wrap{width:min(300px,70vw);height:4px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden}
+.load-bar{height:100%;background:linear-gradient(90deg,var(--acc1),var(--acc3));border-radius:2px;transition:width .3s;width:0%}
+.load-tip{margin-top:16px;font-size:11px;color:rgba(192,132,252,.4);letter-spacing:2px;text-align:center;max-width:280px;line-height:1.8}
+
+/* ─── MAIN CANVAS ─── */
+#game-canvas{position:fixed;inset:0;width:100%;height:100%}
+
+/* ─── HUD ─── */
+#hud{position:fixed;top:0;left:0;right:0;display:none;pointer-events:none;z-index:10}
+.hud-top{display:flex;align-items:flex-start;justify-content:space-between;padding:12px 16px;gap:8px;flex-wrap:wrap}
+#hud-logo{position:fixed;top:10px;left:50%;transform:translateX(-50%);height:36px;width:auto;opacity:0.55;pointer-events:none;z-index:11;filter:drop-shadow(0 0 8px rgba(124,58,237,.5))}
+#wasp-badge{position:fixed;bottom:14px;right:14px;width:48px;height:auto;opacity:0.7;pointer-events:none;z-index:11;filter:drop-shadow(0 0 10px rgba(100,80,255,.8));display:none}
+.hud-panel{background:rgba(4,2,14,.75);border:1px solid rgba(124,58,237,.3);border-radius:10px;padding:8px 14px;backdrop-filter:blur(8px)}
+.hud-val{font-size:22px;font-weight:700;color:#fcd34d;line-height:1}
+.hud-lbl{font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-top:2px}
+.hud-pups{display:flex;gap:6px;align-items:center}
+.pup-icon{width:36px;height:36px;border-radius:50%;border:2px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:18px;position:relative}
+.pup-icon.active{border-color:#fcd34d;box-shadow:0 0 12px rgba(252,211,77,.4)}
+.pup-bar-wrap{width:60px;height:5px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden;margin-top:3px}
+.pup-bar{height:100%;border-radius:3px;transition:width .3s}
+
+/* ─── MINIMAP ─── */
+#minimap{position:fixed;bottom:80px;right:12px;width:100px;height:100px;border:1px solid rgba(124,58,237,.4);border-radius:8px;background:rgba(4,2,14,.85);display:none;z-index:10;overflow:hidden}
+#minimap canvas{width:100%;height:100%}
+
+/* ─── COMPASS ─── */
+#compass{position:fixed;top:14px;left:50%;transform:translateX(-50%);background:rgba(4,2,14,.8);border:1px solid rgba(124,58,237,.3);border-radius:20px;padding:5px 18px;font-size:11px;letter-spacing:3px;color:var(--nebula);display:none;z-index:10;pointer-events:none}
+
+/* ─── CAM FEED ─── */
+#cam-panel{position:fixed;bottom:12px;left:12px;display:none;z-index:12;flex-direction:column;gap:6px}
+#cam-video{width:140px;height:105px;border-radius:8px;border:1px solid rgba(100,255,150,.3);object-fit:cover;transform:scaleX(-1)}
+#cam-overlay{width:140px;height:105px;position:absolute;top:0;left:0;border-radius:8px}
+.cam-badge{font-size:9px;letter-spacing:2px;color:rgba(100,255,150,.8);background:rgba(0,30,20,.8);border:1px solid rgba(100,255,150,.3);border-radius:12px;padding:3px 10px;text-align:center}
+.gesture-display{font-size:10px;letter-spacing:1px;color:rgba(100,255,200,.7);text-align:center;min-height:14px}
+
+/* ─── VOICE LOG ─── */
+#voice-log{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);background:rgba(4,2,14,.85);border:1px solid rgba(100,255,200,.3);border-radius:20px;padding:6px 18px;display:none;align-items:center;gap:8px;z-index:12}
+#voice-log.on{display:flex}
+.vdot{width:7px;height:7px;border-radius:50%;background:#64ffc8;animation:vp .6s ease-in-out infinite alternate}
+@keyframes vp{from{transform:scale(.7);opacity:.5}to{transform:scale(1.3);opacity:1}}
+#voice-txt{font-size:11px;letter-spacing:2px;color:#64ffc8;min-width:120px;text-align:center}
+
+/* ─── BREATH OVERLAY ─── */
+#breath-overlay{position:fixed;inset:0;background:rgba(0,18,13,.96);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:100;text-align:center;pointer-events:all}
+#breath-overlay.on{display:flex}
+#breath-ring{width:120px;height:120px;border:2px solid rgba(100,255,200,.5);border-radius:50%;margin:16px auto;animation:breathe 5s ease-in-out infinite}
+@keyframes breathe{0%,100%{transform:scale(1);opacity:.4}50%{transform:scale(1.8);opacity:1}}
+.breath-title{font-size:26px;letter-spacing:6px;color:rgba(100,255,200,.9)}
+.breath-sub{font-size:13px;color:rgba(150,220,200,.65);letter-spacing:3px;margin-top:8px}
+.breath-count{font-size:42px;color:#40e0d0;font-weight:700;margin:12px 0}
+#btn-breath-close{padding:10px 28px;background:transparent;border:1px solid rgba(100,255,200,.38);border-radius:26px;color:rgba(100,255,200,.85);font-size:11px;letter-spacing:3px;cursor:pointer;margin-top:16px;font-family:inherit}
+
+/* ─── TOUCH CONTROLS ─── */
+#touch-left{position:fixed;bottom:20px;left:20px;width:130px;height:130px;display:none;z-index:15}
+#touch-right{position:fixed;bottom:20px;right:20px;display:none;z-index:15;gap:10px;flex-direction:column;align-items:center}
+.joystick-base{width:110px;height:110px;border-radius:50%;background:rgba(124,58,237,.12);border:2px solid rgba(124,58,237,.3);position:relative;touch-action:none}
+.joystick-knob{width:44px;height:44px;border-radius:50%;background:rgba(124,58,237,.5);border:2px solid var(--acc2);position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);transition:transform .05s}
+.act-btn{width:54px;height:54px;border-radius:50%;border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;touch-action:none;user-select:none}
+.act-btn.pulse{animation:btnpulse .4s ease-out}
+@keyframes btnpulse{0%{box-shadow:0 0 0 0 rgba(192,132,252,.6)}100%{box-shadow:0 0 0 20px rgba(192,132,252,0)}}
+
+/* ─── MENU SCREENS ─── */
+.screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:50;text-align:center;padding:24px;background:rgba(4,2,14,.95);backdrop-filter:blur(8px)}
+.screen.hidden{display:none}
+.screen-title{font-size:clamp(24px,5vw,56px);font-weight:700;letter-spacing:6px;color:var(--nebula);text-shadow:0 0 40px rgba(192,132,252,.5);margin-bottom:8px}
+.screen-sub{font-size:12px;letter-spacing:4px;color:var(--muted);margin-bottom:32px}
+.menu-btn{width:min(320px,85vw);padding:14px 24px;margin:6px 0;background:transparent;border:1px solid rgba(124,58,237,.5);border-radius:8px;color:var(--txt);font-size:13px;letter-spacing:3px;cursor:pointer;transition:all .2s;font-family:inherit;text-align:left;display:flex;align-items:center;gap:12px}
+.menu-btn:hover{background:rgba(124,58,237,.12);border-color:var(--acc2);transform:translateX(4px)}
+.menu-btn .icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.menu-btn .icon.void{background:rgba(26,26,62,.8)}
+.menu-btn .icon.nebula{background:rgba(124,58,237,.3)}
+.menu-btn .icon.crystal{background:rgba(64,224,208,.2)}
+.menu-btn .icon.neon{background:rgba(57,255,20,.15)}
+
+/* ─── ZONE SELECT ─── */
+.zone-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;max-width:700px;margin:24px auto}
+.zone-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px 16px;cursor:pointer;transition:all .2s;text-align:center}
+.zone-card:hover{border-color:var(--acc2);transform:translateY(-4px);box-shadow:0 12px 40px rgba(124,58,237,.3)}
+.zone-card .zone-icon{font-size:36px;margin-bottom:10px}
+.zone-card .zone-name{font-size:14px;font-weight:600;letter-spacing:1px;margin-bottom:4px}
+.zone-card .zone-desc{font-size:11px;color:var(--muted);line-height:1.5}
+
+/* ─── PAUSE MENU ─── */
+#pause-menu{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:80;background:rgba(4,2,14,.85);backdrop-filter:blur(12px)}
+#pause-menu.on{display:flex}
+.pause-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px 24px;max-width:340px;width:90%;text-align:center}
+.pause-title{font-size:28px;letter-spacing:6px;color:var(--nebula);margin-bottom:24px;font-weight:700}
+
+/* ─── NOTIFICATION ─── */
+#notif{position:fixed;top:80px;left:50%;transform:translateX(-50%);z-index:30;pointer-events:none;transition:all .4s;opacity:0;max-width:340px;width:90%}
+#notif.show{opacity:1}
+.notif-inner{background:rgba(10,5,32,.92);border:1px solid rgba(124,58,237,.5);border-radius:10px;padding:12px 18px;text-align:center;font-size:13px;color:var(--txt);letter-spacing:1px}
+
+/* ─── AURA METER ─── */
+#aura-bar{position:fixed;left:12px;bottom:200px;display:none;flex-direction:column;align-items:center;gap:4px;z-index:10}
+.aura-track{width:8px;height:120px;background:rgba(255,255,255,.1);border-radius:4px;overflow:hidden;position:relative}
+.aura-fill{position:absolute;bottom:0;width:100%;border-radius:4px;transition:height .3s;background:linear-gradient(to top,var(--acc1),var(--acc3))}
+.aura-lbl{font-size:9px;letter-spacing:1px;color:var(--muted);writing-mode:vertical-lr;transform:rotate(180deg)}
+
+/* ─── ACCESSIBILITY OVERLAY ─── */
+#a11y-bar{position:fixed;top:0;right:0;display:none;flex-direction:column;gap:4px;padding:8px;z-index:20}
+.a11y-btn{width:34px;height:34px;border-radius:8px;background:rgba(4,2,14,.8);border:1px solid rgba(124,58,237,.3);color:var(--muted);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;pointer-events:all;transition:all .2s}
+.a11y-btn:hover{border-color:var(--acc2);color:var(--txt)}
+.a11y-btn.on{border-color:var(--gold);color:var(--gold)}
+
+/* ─── SETTINGS PANEL ─── */
+#settings-panel{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:90;background:rgba(4,2,14,.9)}
+#settings-panel.on{display:flex}
+.settings-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px;max-width:460px;width:90%;max-height:85vh;overflow-y:auto}
+.settings-h{font-size:18px;font-weight:600;color:var(--nebula);margin-bottom:20px;letter-spacing:2px}
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.setting-label{font-size:13px;color:var(--txt)}
+.setting-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.toggle{width:44px;height:24px;border-radius:12px;background:rgba(255,255,255,.15);cursor:pointer;position:relative;transition:background .2s;flex-shrink:0}
+.toggle.on{background:var(--acc1)}
+.toggle::after{content:'';position:absolute;width:18px;height:18px;border-radius:50%;background:#fff;top:3px;left:3px;transition:left .2s}
+.toggle.on::after{left:23px}
+.range-row{display:flex;align-items:center;gap:10px;width:160px}
+input[type=range]{flex:1;accent-color:var(--acc1)}
+
+/* ─── COMBO FLASH ─── */
+#combo-flash{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-size:clamp(24px,6vw,56px);font-weight:900;color:var(--gold);pointer-events:none;z-index:25;opacity:0;letter-spacing:4px;text-shadow:0 0 30px rgba(252,211,77,.6)}
+
+/* ─── XP POPUP ─── */
+.xp-pop{position:fixed;pointer-events:none;z-index:25;font-size:16px;font-weight:700;color:#fcd34d;text-shadow:0 0 10px rgba(252,211,77,.5);animation:floatup 1.2s ease-out forwards}
+@keyframes floatup{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-80px)}}
+
+/* ─── INPUT LOG ─── */
+#input-log{position:fixed;bottom:14px;right:12px;font-size:10px;color:rgba(100,200,255,.3);letter-spacing:1px;text-align:right;pointer-events:none;z-index:5;display:none}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:600px){
+  .hud-val{font-size:18px}
+  .pup-icon{width:30px;height:30px;font-size:15px}
+  .pup-bar-wrap{width:48px}
+}
+
+#btn-nexus-dragon{
+  position:absolute;bottom:-14px;right:-14px;
+  width:min(72px,16vw);height:min(72px,16vw);padding:0;
+  border:2px solid rgba(124,58,237,.65);border-radius:18px;
+  background:rgba(10,5,32,.9);cursor:pointer;overflow:hidden;
+  box-shadow:0 0 22px rgba(124,58,237,.55);z-index:5;
+  transition:transform .2s,box-shadow .2s,border-color .2s;
+}
+#btn-nexus-dragon img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 0 12px rgba(100,80,255,.9));pointer-events:none;animation:pulse 3s ease-in-out infinite .5s}
+#btn-nexus-dragon:hover{transform:scale(1.1);border-color:#a855f7;box-shadow:0 0 36px rgba(192,132,252,.85)}
+#btn-nexus-dragon:active{transform:scale(0.95)}
+#screen-start{background:radial-gradient(ellipse at 50% 28%,#1a0a3e 0%,#0a0520 40%,#04020e 70%,#020010 100%)!important}
+#screen-start .menu-btn{border-radius:28px;border:1px solid rgba(124,58,237,.55);background:rgba(12,6,36,.7);backdrop-filter:blur(12px);padding:15px 22px}
+#screen-start .menu-btn:hover{background:rgba(124,58,237,.2);box-shadow:0 0 24px rgba(124,58,237,.3)}
+.vr-hint{margin-top:20px;padding:12px 18px;border:1px solid rgba(6,182,212,.35);border-radius:14px;background:rgba(6,182,212,.06);max-width:min(380px,92vw);font-size:11px;color:var(--muted);letter-spacing:1px;line-height:1.65;text-align:left}
+.vr-hint strong{color:#06b6d4}
+.support-line{margin-top:16px;font-size:10px;letter-spacing:1.5px;color:rgba(157,142,199,.55);max-width:380px;line-height:1.7}
+
+</style>
+</head>
+<body>
+
+<a href="index.html" id="hub-back-btn" style="position:fixed;top:12px;left:12px;z-index:999;display:flex;align-items:center;gap:6px;background:rgba(7,3,20,.72);backdrop-filter:blur(6px);border:1px solid rgba(155,121,255,.35);color:#F0EEFF;font:11px/1 system-ui,sans-serif;letter-spacing:.5px;text-decoration:none;padding:8px 12px;border-radius:999px">← Santuario</a>
+<div id="hub-privacy-badge" style="position:fixed;bottom:12px;left:12px;z-index:999;display:flex;align-items:center;gap:6px;background:rgba(7,3,20,.72);backdrop-filter:blur(6px);border:1px solid rgba(196,255,60,.3);color:#C4FF3C;font:10px/1.3 system-ui,sans-serif;letter-spacing:.3px;padding:8px 12px;border-radius:12px;max-width:230px">🔒 Cámara y sensores procesados 100% en tu navegador. Nada biométrico se guarda ni se envía.</div>
+
+<!-- LOADING -->
+<div id="loading">
+  <img src="nuhu_logo.png" alt="ÑUHU Resonance" style="width:min(260px,60vw);height:auto;margin-bottom:16px;filter:drop-shadow(0 0 30px rgba(192,132,252,0.7)) drop-shadow(0 0 60px rgba(124,58,237,0.4));animation:pulse 2.5s ease-in-out infinite">
+  <div class="load-sub">DRAGON SANCTUARY · EL DESPERTAR DEL NEXO</div>
+  <div class="load-bar-wrap"><div class="load-bar" id="load-bar"></div></div>
+  <div class="load-tip" id="load-tip">Inicializando el Nexo...</div>
+</div>
+
+<!-- MAIN GAME CANVAS -->
+<canvas id="game-canvas"></canvas>
+
+<!-- HUD -->
+<div id="hud">
+  <img src="nuhu_logo.png" alt="ÑUHU" id="hud-logo">
+  <img src="nuhu_logo.png" alt="Wasp" id="wasp-badge">
+  <div class="hud-top">
+    <div class="hud-panel">
+      <div class="hud-val" id="score-val">0</div>
+      <div class="hud-lbl">Nexo pts</div>
+    </div>
+    <div class="hud-panel" style="text-align:center">
+      <div style="display:flex;gap:12px;align-items:center">
+        <div>
+          <div class="hud-val" id="level-val">1</div>
+          <div class="hud-lbl">Nivel</div>
+        </div>
+        <div style="width:1px;height:30px;background:rgba(255,255,255,.1)"></div>
+        <div>
+          <div class="hud-val" id="zone-val" style="font-size:14px;letter-spacing:1px">—</div>
+          <div class="hud-lbl">Zona</div>
+        </div>
+      </div>
+    </div>
+    <div class="hud-panel">
+      <div class="hud-pups" id="pups-hud"></div>
+    </div>
+  </div>
+</div>
+
+<!-- COMPASS -->
+<div id="compass" id="compass-dir">N</div>
+
+<!-- MINIMAP -->
+<div id="minimap"><canvas id="map-canvas" width="100" height="100"></canvas></div>
+
+<!-- AURA METER -->
+<div id="aura-bar">
+  <div class="aura-lbl">AURA</div>
+  <div class="aura-track"><div class="aura-fill" id="aura-fill" style="height:60%"></div></div>
+</div>
+
+<!-- CAMERA + GESTURE -->
+<div id="cam-panel" style="position:fixed;bottom:12px;left:12px;display:none;flex-direction:column;gap:4px">
+  <div style="position:relative;width:140px;height:105px">
+    <video id="cam-video" width="140" height="105" autoplay muted playsinline></video>
+    <canvas id="cam-overlay" width="140" height="105"></canvas>
+  </div>
+  <div class="cam-badge" id="cam-badge">📷 CÁMARA ACTIVA</div>
+  <div class="gesture-display" id="gesture-display">—</div>
+</div>
+
+<!-- VOICE LOG -->
+<div id="voice-log">
+  <div class="vdot"></div>
+  <span id="voice-txt">Escuchando...</span>
+</div>
+
+<!-- BREATH OVERLAY (calm mode) -->
+<div id="breath-overlay">
+  <div class="breath-title">RESPIRA</div>
+  <div id="breath-ring"></div>
+  <div class="breath-count" id="breath-count">4</div>
+  <div class="breath-sub" id="breath-sub">INHALA</div>
+  <button id="btn-breath-close" onclick="closeCalmMode()">CONTINUAR →</button>
+</div>
+
+<!-- INPUT LOG -->
+<div id="input-log" id="input-log-txt"></div>
+
+<!-- TOUCH LEFT JOYSTICK -->
+<div id="touch-left">
+  <div class="joystick-base" id="jstick-base">
+    <div class="joystick-knob" id="jstick-knob"></div>
+  </div>
+</div>
+
+<!-- TOUCH RIGHT BUTTONS -->
+<div id="touch-right">
+  <div style="display:flex;gap:8px">
+    <div class="act-btn" id="btn-jump" title="Saltar">↑</div>
+    <div class="act-btn" id="btn-action" title="Acción" style="background:rgba(124,58,237,.3);border-color:var(--acc2)">✦</div>
+  </div>
+  <div style="display:flex;gap:8px">
+    <div class="act-btn" id="btn-calm" title="Modo calma" style="font-size:14px;border-color:rgba(100,255,200,.3);color:#64ffc8">☯</div>
+    <div class="act-btn" id="btn-cam-toggle" title="Cámara" style="font-size:14px">📷</div>
+  </div>
+</div>
+
+<!-- ACCESSIBILITY BAR -->
+<div id="a11y-bar">
+  <button class="a11y-btn" id="btn-photo-safe" title="Modo foto-seguro" onclick="toggleA11y('photoSafe')">⚡</button>
+  <button class="a11y-btn" id="btn-high-contrast" title="Alto contraste" onclick="toggleA11y('highContrast')">◑</button>
+  <button class="a11y-btn" id="btn-reduced-motion" title="Reducir movimiento" onclick="toggleA11y('reducedMotion')">〰</button>
+  <button class="a11y-btn" id="btn-settings-open" title="Configuración" onclick="openSettings()">⚙</button>
+</div>
+
+<!-- NOTIFICATION POPUP -->
+<div id="notif"><div class="notif-inner" id="notif-txt"></div></div>
+
+<!-- COMBO FLASH -->
+<div id="combo-flash" id="combo-txt"></div>
+
+<!-- ═══ SCREENS ═══ -->
+
+<!-- START SCREEN -->
+<div class="screen" id="screen-start">
+  <div style="position:relative;margin-bottom:4px">
+    <img src="nuhu_logo.png" alt="ÑUHU Resonance" style="width:min(280px,58vw);height:auto;filter:drop-shadow(0 0 40px rgba(192,132,252,0.8)) drop-shadow(0 0 80px rgba(124,58,237,0.5));animation:pulse 2.5s ease-in-out infinite">
+    <button type="button" id="btn-nexus-dragon" onclick="startGame()" title="Entrar al Santuario con el Dragón" aria-label="Entrar con el dragón">
+      <img src="nuhu_logo.png" alt="Entrar con el Dragón">
+    </button>
+  </div>
+  <div class="screen-sub" style="margin-top:4px">DRAGON SANCTUARY · EL DESPERTAR DEL NEXO</div>
+  <div style="margin-bottom:8px;width:min(340px,90vw)">
+    <button class="menu-btn" onclick="startGame()">
+      <div class="icon void">🌑</div>
+      <div><div>NUEVA AVENTURA</div><div style="font-size:10px;color:var(--muted);letter-spacing:1px;margin-top:2px">Comienza el Despertar</div></div>
+    </button>
+    <button class="menu-btn" onclick="showZoneSelect()">
+      <div class="icon nebula">🌌</div>
+      <div><div>SELECCIONAR ZONA</div><div style="font-size:10px;color:var(--muted);letter-spacing:1px;margin-top:2px">Crystal Cave · Silent Observatory · Star Cradle · Green Sanctuary</div></div>
+    </button>
+    <button class="menu-btn" onclick="showDragonSelect()">
+      <div class="icon crystal">🐣</div>
+      <div><div>ELEGIR DRAGÓN</div><div style="font-size:10px;color:var(--muted);letter-spacing:1px;margin-top:2px">Void · Nebula · Crystal · Neon Baby Pup</div></div>
+    </button>
+    <button class="menu-btn" onclick="openSettings()">
+      <div class="icon neon">⚙</div>
+      <div><div>CONFIGURACIÓN</div><div style="font-size:10px;color:var(--muted);letter-spacing:1px;margin-top:2px">Accesibilidad · Audio · Controles</div></div>
+    </button>
+  </div>
+  <div style="font-size:10px;color:rgba(100,200,255,.25);letter-spacing:2px;margin-top:16px;max-width:400px;line-height:1.8">
+    Soporta: Teclado · Gamepad (Xbox/PS) · Touch · Cámara · Voz<br>
+    Epilepsy-safe · Neurodivergente · Modo calma integrado
+  </div>
+  <div style="margin-top:14px;display:flex;align-items:center;gap:10px;background:rgba(191,90,242,0.06);border:1px solid rgba(191,90,242,0.2);border-radius:8px;padding:10px 16px;max-width:400px">
+    <span style="font-size:22px">🥽</span>
+    <div style="text-align:left">
+      <div style="font-size:10px;color:#BF5AF2;letter-spacing:2px;font-family:monospace">MODO VR · WebXR</div>
+      <div style="font-size:10px;color:rgba(245,245,245,0.35);letter-spacing:1px;margin-top:2px">Compatible: Meta Quest 2/3 · Pico 4 · PC VR (SteamVR)<br>Presiona el botón 🥽 (esquina inferior derecha) cuando estés listo</div>
+    </div>
+  </div>
+</div>
+
+<!-- ZONE SELECT SCREEN -->
+<div class="screen hidden" id="screen-zone">
+  <div class="screen-title" style="font-size:clamp(18px,4vw,32px)">SELECCIONA ZONA</div>
+  <div class="screen-sub">EL DESPERTAR DEL NEXO</div>
+  <div class="zone-grid">
+    <div class="zone-card" onclick="selectZone('crystal')">
+      <div class="zone-icon">💎</div>
+      <div class="zone-name" style="color:#40e0d0">Crystal Cave</div>
+      <div class="zone-desc">Cueva de Resonancia de Voz · Dragón Crystal</div>
+    </div>
+    <div class="zone-card" onclick="selectZone('silent')">
+      <div class="zone-icon">🔭</div>
+      <div class="zone-name" style="color:#a855f7">Silent Observatory</div>
+      <div class="zone-desc">Foco y Atención · Dragón Void</div>
+    </div>
+    <div class="zone-card" onclick="selectZone('star')">
+      <div class="zone-icon">⭐</div>
+      <div class="zone-name" style="color:#c084fc">Star Cradle</div>
+      <div class="zone-desc">Regulación Emocional · Dragón Nebula</div>
+    </div>
+    <div class="zone-card" onclick="selectZone('green')">
+      <div class="zone-icon">🌿</div>
+      <div class="zone-name" style="color:#39ff14">Green Sanctuary</div>
+      <div class="zone-desc">Sincronización de Movimiento · Dragón Neon</div>
+    </div>
+  </div>
+  <button class="menu-btn" style="width:auto;margin-top:8px" onclick="showScreen('screen-start')">← Volver</button>
+</div>
+
+<!-- DRAGON SELECT SCREEN -->
+<div class="screen hidden" id="screen-dragon">
+  <div class="screen-title" style="font-size:clamp(18px,4vw,32px)">TU BABY PUP</div>
+  <div class="screen-sub">ELIGE TU DRAGÓN GUARDIÁN</div>
+  <div class="zone-grid">
+    <div class="zone-card" onclick="selectDragon('void')">
+      <div class="zone-icon">🌑</div>
+      <div class="zone-name" style="color:#a855f7">Void Baby Pup</div>
+      <div class="zone-desc">Foco · Atención<br><span style="color:#7c3aed">Focus Stability 90%</span></div>
+    </div>
+    <div class="zone-card" onclick="selectDragon('nebula')">
+      <div class="zone-icon">🌌</div>
+      <div class="zone-name" style="color:#c084fc">Nebula Baby Pup</div>
+      <div class="zone-desc">Regulación Emocional<br><span style="color:#a855f7">Heart Rate Sync 60 BPM</span></div>
+    </div>
+    <div class="zone-card" onclick="selectDragon('crystal')">
+      <div class="zone-icon">💎</div>
+      <div class="zone-name" style="color:#40e0d0">Crystal Baby Pup</div>
+      <div class="zone-desc">Resonancia de Voz<br><span style="color:#06b6d4">Voice Sync 95%</span></div>
+    </div>
+    <div class="zone-card" onclick="selectDragon('neon')">
+      <div class="zone-icon">⚡</div>
+      <div class="zone-name" style="color:#39ff14">Neon Baby Pup</div>
+      <div class="zone-desc">Sincronización de Movimiento<br><span style="color:#22c55e">Aura Sync: Active</span></div>
+    </div>
+  </div>
+  <button class="menu-btn" style="width:auto;margin-top:8px" onclick="showScreen('screen-start')">← Volver</button>
+</div>
+
+<!-- PAUSE MENU -->
+<div id="pause-menu">
+  <div class="pause-box">
+    <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:20px">
+      <img src="nuhu_logo.png" alt="ÑUHU" style="height:52px;width:auto;filter:drop-shadow(0 0 16px rgba(192,132,252,.6))">
+      <img src="nuhu_logo.png" alt="Wasp" style="height:36px;width:auto;filter:drop-shadow(0 0 12px rgba(100,80,255,.8))">
+    </div>
+    <div class="pause-title" style="margin-bottom:16px">PAUSA</div>
+    <button class="menu-btn" onclick="resumeGame()"><div class="icon nebula">▶</div> CONTINUAR</button>
+    <button class="menu-btn" onclick="openCalmMode()"><div class="icon crystal">☯</div> MODO CALMA</button>
+    <button class="menu-btn" onclick="showZoneSelect()"><div class="icon void">🗺</div> CAMBIAR ZONA</button>
+    <button class="menu-btn" onclick="openSettings()"><div class="icon neon">⚙</div> CONFIGURACIÓN</button>
+    <button class="menu-btn" onclick="exitToMenu()" style="color:rgba(220,50,50,.8);border-color:rgba(220,50,50,.3);margin-top:8px"><div class="icon" style="background:rgba(220,50,50,.2)">✕</div> SALIR AL MENÚ</button>
+  </div>
+</div>
+
+<!-- SETTINGS PANEL -->
+<div id="settings-panel">
+  <div class="settings-box">
+    <div class="settings-h">⚙ CONFIGURACIÓN</div>
+
+    <div style="font-size:11px;color:var(--muted);letter-spacing:2px;margin-bottom:8px">ACCESIBILIDAD</div>
+    <div class="setting-row">
+      <div><div class="setting-label">Modo foto-seguro (epilepsia)</div><div class="setting-sub">Limita flash ≤ 3 Hz (ILAE)</div></div>
+      <div class="toggle on" id="tog-photoSafe" onclick="toggleSetting('photoSafe',this)"></div>
+    </div>
+    <div class="setting-row">
+      <div><div class="setting-label">Alto contraste</div><div class="setting-sub">Para baja visión</div></div>
+      <div class="toggle" id="tog-highContrast" onclick="toggleSetting('highContrast',this)"></div>
+    </div>
+    <div class="setting-row">
+      <div><div class="setting-label">Reducir movimiento</div><div class="setting-sub">Menos animaciones de cámara</div></div>
+      <div class="toggle" id="tog-reducedMotion" onclick="toggleSetting('reducedMotion',this)"></div>
+    </div>
+    <div class="setting-row">
+      <div><div class="setting-label">Modo simplificado (TEA)</div><div class="setting-sub">UI mínima, transiciones suaves</div></div>
+      <div class="toggle" id="tog-simpleMode" onclick="toggleSetting('simpleMode',this)"></div>
+    </div>
+
+    <div style="font-size:11px;color:var(--muted);letter-spacing:2px;margin:16px 0 8px">AUDIO</div>
+    <div class="setting-row">
+      <div class="setting-label">Música</div>
+      <div class="range-row"><input type="range" min="0" max="100" value="70" id="vol-music" oninput="updateVol('music',this.value)"><span style="font-size:11px;width:28px;text-align:right" id="vol-music-lbl">70</span></div>
+    </div>
+    <div class="setting-row">
+      <div class="setting-label">Efectos</div>
+      <div class="range-row"><input type="range" min="0" max="100" value="85" id="vol-sfx" oninput="updateVol('sfx',this.value)"><span style="font-size:11px;width:28px;text-align:right" id="vol-sfx-lbl">85</span></div>
+    </div>
+
+    <div style="font-size:11px;color:var(--muted);letter-spacing:2px;margin:16px 0 8px">CONTROLES</div>
+    <div class="setting-row">
+      <div><div class="setting-label">Activar cámara (gestos)</div><div class="setting-sub">Usa MediaPipe para detectar movimientos</div></div>
+      <div class="toggle" id="tog-camera" onclick="toggleCamera(this)"></div>
+    </div>
+    <div class="setting-row">
+      <div><div class="setting-label">Control de voz</div><div class="setting-sub">Comandos: "salta", "volar", "calma"</div></div>
+      <div class="toggle" id="tog-voice" onclick="toggleVoice(this)"></div>
+    </div>
+    <div class="setting-row">
+      <div class="setting-label">Vibración (Gamepad)</div>
+      <div class="toggle on" id="tog-haptic" onclick="toggleSetting('haptic',this)"></div>
+    </div>
+    <div class="setting-row">
+      <div class="setting-label">Sesiones cortas (≤10 min)</div>
+      <div class="toggle" id="tog-shortSession" onclick="toggleSetting('shortSession',this)"></div>
+    </div>
+
+    <div style="font-size:11px;color:var(--muted);letter-spacing:2px;margin:16px 0 8px">DALTONISMO</div>
+    <div class="setting-row">
+      <div class="setting-label">Filtro de color</div>
+      <select id="sel-colorblind" style="background:var(--deep);color:var(--txt);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:12px" onchange="setColorblind(this.value)">
+        <option value="none">Ninguno</option>
+        <option value="protanopia">Protanopia</option>
+        <option value="deuteranopia">Deuteranopia</option>
+        <option value="tritanopia">Tritanopia</option>
+      </select>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-top:20px">
+      <button class="menu-btn" style="flex:1;justify-content:center" onclick="closeSettings()">✓ GUARDAR</button>
+    </div>
+  </div>
+</div>
+
+<!-- THREE.JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/examples/js/loaders/GLTFLoader.js"></script>
+<script>
+// ─── VRButton inline (Three.js r128 compatible) ───────────
+class VRButton {
+  static createButton(renderer) {
+    const button = document.createElement('button');
+    function showEnterVR() {
+      let currentSession = null;
+      async function onSessionStarted(session) {
+        session.addEventListener('end', onSessionEnded);
+        await renderer.xr.setSession(session);
+        button.textContent = '✕ SALIR DE VR';
+        button.style.background = 'rgba(191,90,242,0.3)';
+        currentSession = session;
+      }
+      function onSessionEnded() {
+        currentSession.removeEventListener('end', onSessionEnded);
+        button.textContent = '🥽 ENTRAR EN VR';
+        button.style.background = 'rgba(4,2,14,0.85)';
+        currentSession = null;
+      }
+      button.onclick = function() {
+        if(!currentSession) {
+          navigator.xr.requestSession('immersive-vr', { optionalFeatures:['local-floor','bounded-floor','hand-tracking'] }).then(onSessionStarted);
+        } else {
+          currentSession.end();
+        }
+      };
+    }
+    function showWebXRNotFound() {
+      button.textContent = 'VR no disponible';
+      button.style.opacity = '0.4';
+      button.disabled = true;
+    }
+    if('xr' in navigator) {
+      button.id = 'vr-btn';
+      button.style.cssText = `
+        position:fixed;bottom:20px;right:20px;z-index:999;
+        padding:12px 20px;border:1px solid rgba(191,90,242,0.6);
+        background:rgba(4,2,14,0.85);color:#BF5AF2;
+        font-family:'Share Tech Mono',monospace;font-size:11px;
+        letter-spacing:3px;border-radius:8px;cursor:pointer;
+        backdrop-filter:blur(8px);transition:all .2s;
+      `;
+      button.textContent = '🥽 ENTRAR EN VR';
+      navigator.xr.isSessionSupported('immersive-vr').then(supported => {
+        supported ? showEnterVR() : showWebXRNotFound();
+      }).catch(showWebXRNotFound);
+      document.body.appendChild(button);
+      return button;
+    } else {
+      const msg = document.createElement('a');
+      msg.href = 'https://immersiveweb.dev/';
+      msg.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:999;color:#a855f7;font-size:11px;font-family:monospace;letter-spacing:2px;';
+      msg.textContent = 'WebXR no soportado';
+      document.body.appendChild(msg);
+      return msg;
+    }
+  }
+}
+</script>
+
+<script>
+// ════════════════════════════════════════════════════════
+//  ÑUHU DRAGON SANCTUARY — Main Game Engine
+//  Compatible: PC/Mac (keyboard+mouse), Mobile (touch),
+//              Xbox/PlayStation (Gamepad API), Camera (MediaPipe sim)
+// ════════════════════════════════════════════════════════
+
+// ─── GLOBAL STATE ───────────────────────────────────────
+const G = {
+  scene: null, camera: null, renderer: null,
+  clock: new THREE.Clock(),
+  frame: 0,
+  running: false,
+  paused: false,
+  score: 0,
+  xp: 0,
+  level: 1,
+  combo: 0,
+  comboTimer: 0,
+  currentZone: 'crystal',
+  currentDragon: 'void',
+  aura: 0.6,
+  // Settings
+  settings: {
+    photoSafe: true,
+    highContrast: false,
+    reducedMotion: false,
+    simpleMode: false,
+    haptic: true,
+    shortSession: false,
+    camera: false,
+    voice: false,
+    volMusic: 0.7,
+    volSfx: 0.85,
+    colorblind: 'none'
+  },
+  // Input state
+  keys: {},
+  gamepadIndex: -1,
+  touch: { jx: 0, jy: 0, active: false },
+  // Camera/gesture
+  cameraActive: false,
+  gesture: 'none',
+  // Voice
+  voiceActive: false,
+  voiceRec: null,
+  // Session timer
+  sessionStart: 0,
+  // Audio
+  audioCtx: null,
+  bgAudio: null,
+  musicNode: null,
+  // Dragon entity
+  dragon: null,
+  dragonTarget: new THREE.Vector3(),
+  dragonVel: new THREE.Vector3(),
+  // Orbs / collectibles
+  orbs: [],
+  // Particles
+  particles: [],
+  // Environment objects
+  envObjects: [],
+  // Zone data
+  zones: {
+    crystal: { name:'Crystal Cave', color:0x40e0d0, fogColor:0x001a2e, ambientColor:0x003355, dragon:'crystal', emoji:'💎' },
+    silent:  { name:'Silent Observatory', color:0xa855f7, fogColor:0x04020e, ambientColor:0x110a2a, dragon:'void', emoji:'🔭' },
+    star:    { name:'Star Cradle', color:0xc084fc, fogColor:0x0a0014, ambientColor:0x1a0530, dragon:'nebula', emoji:'⭐' },
+    green:   { name:'Green Sanctuary', color:0x39ff14, fogColor:0x001a00, ambientColor:0x001a00, dragon:'neon', emoji:'🌿' }
+  },
+  // Minimap
+  mapCtx: null,
+  // Pups state
+  pups: [
+    { id:'void', name:'Void', emoji:'🌑', color:'#a855f7', energy:90, barColor:'#7c3aed' },
+    { id:'nebula', name:'Nebula', emoji:'🌌', color:'#c084fc', energy:75, barColor:'#c084fc' },
+    { id:'crystal', name:'Crystal', emoji:'💎', color:'#40e0d0', barColor:'#40e0d0', energy:85 },
+    { id:'neon', name:'Neon', emoji:'⚡', color:'#39ff14', barColor:'#39ff14', energy:60 }
+  ],
+  // Nexus gate
+  nexusGate: null,
+  nexusPulse: 0,
+};
+
+// ─── THREE.JS SETUP ─────────────────────────────────────
+function initThree() {
+  const canvas = document.getElementById('game-canvas');
+  G.scene = new THREE.Scene();
+  G.camera = new THREE.PerspectiveCamera(75, innerWidth/innerHeight, 0.1, 1000);
+  G.camera.position.set(0, 6, 14);
+  G.camera.lookAt(0, 0, 0);
+
+  G.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+  G.renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  G.renderer.setSize(innerWidth, innerHeight);
+  G.renderer.shadowMap.enabled = true;
+  G.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  G.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  G.renderer.toneMappingExposure = 1.2;
+
+  // ── WebXR / VR Support ──────────────────────────
+  G.renderer.xr.enabled = true;
+  VRButton.createButton(G.renderer);
+
+  // VR Controllers
+  initVRControllers();
+
+  window.addEventListener('resize', onResize);
+}
+
+function initVRControllers() {
+  // Controller 0 (right) — trigger = action
+  G.vrController0 = G.renderer.xr.getController(0);
+  G.vrController0.addEventListener('selectstart', () => { dragonAction(); hapticPulse(60,0.4); });
+  G.vrController0.addEventListener('squeezestart', () => { dragonJump(); });
+
+  // Controller 1 (left) — trigger = collect / nexus pulse
+  G.vrController1 = G.renderer.xr.getController(1);
+  G.vrController1.addEventListener('selectstart', () => { openCalmMode(); });
+
+  // Visual rays for controllers
+  [G.vrController0, G.vrController1].forEach((ctrl, i) => {
+    const lineGeo = new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,-3)
+    ]);
+    const line = new THREE.Line(lineGeo, new THREE.LineBasicMaterial({
+      color: i === 0 ? 0xBF5AF2 : 0x40e0d0, transparent:true, opacity:0.5
+    }));
+    ctrl.add(line);
+
+    // Controller grip visual
+    const gripGeo = new THREE.CylinderGeometry(0.02, 0.02, 0.12, 8);
+    const gripMat = new THREE.MeshPhongMaterial({ color: i===0?0xBF5AF2:0x40e0d0, emissive:i===0?0x4a00aa:0x004455, emissiveIntensity:0.4 });
+    ctrl.add(new THREE.Mesh(gripGeo, gripMat));
+
+    G.scene?.add(ctrl);
+  });
+
+  // Grip space (for hand models)
+  G.vrGrip0 = G.renderer.xr.getControllerGrip(0);
+  G.vrGrip1 = G.renderer.xr.getControllerGrip(1);
+  G.scene?.add(G.vrGrip0);
+  G.scene?.add(G.vrGrip1);
+}
+
+function onResize() {
+  G.camera.aspect = innerWidth / innerHeight;
+  G.camera.updateProjectionMatrix();
+  G.renderer.setSize(innerWidth, innerHeight);
+}
+
+// ─── ZONE BUILDER ───────────────────────────────────────
+function buildZone(zoneId) {
+  // Clear previous
+  while(G.scene.children.length > 0) G.scene.remove(G.scene.children[0]);
+  G.orbs = []; G.particles = []; G.envObjects = [];
+
+  const z = G.zones[zoneId];
+  G.scene.fog = new THREE.FogExp2(z.fogColor, 0.035);
+  G.scene.background = new THREE.Color(z.fogColor);
+
+  // Lighting
+  const ambient = new THREE.AmbientLight(z.ambientColor, 0.8);
+  G.scene.add(ambient);
+
+  const sun = new THREE.DirectionalLight(z.color, 1.5);
+  sun.position.set(10, 20, 10);
+  sun.castShadow = true;
+  sun.shadow.mapSize.width = 1024;
+  sun.shadow.mapSize.height = 1024;
+  sun.shadow.camera.near = 0.5;
+  sun.shadow.camera.far = 100;
+  sun.shadow.camera.left = -20;
+  sun.shadow.camera.right = 20;
+  sun.shadow.camera.top = 20;
+  sun.shadow.camera.bottom = -20;
+  G.scene.add(sun);
+
+  // Fill light
+  const fill = new THREE.PointLight(z.color, 0.5, 50);
+  fill.position.set(-8, 5, 0);
+  G.scene.add(fill);
+
+  // Starfield (for void/star zones)
+  if(zoneId === 'silent' || zoneId === 'star') buildStarfield();
+
+  // Ground / Platform
+  buildGround(z);
+
+  // Zone-specific environment
+  switch(zoneId) {
+    case 'crystal': buildCrystalCave(z); break;
+    case 'silent':  buildSilentObservatory(z); break;
+    case 'star':    buildStarCradle(z); break;
+    case 'green':   buildGreenSanctuary(z); break;
+  }
+
+  // Nexus Gate (always present)
+  buildNexusGate(z);
+
+  // Dragon
+  buildDragon(G.currentDragon, z);
+
+  // Orbs
+  spawnOrbs(12, z);
+
+  // Update HUD zone
+  document.getElementById('zone-val').textContent = z.emoji + ' ' + z.name.split(' ')[0].toUpperCase();
+}
+
+function buildStarfield() {
+  const geo = new THREE.BufferGeometry();
+  const verts = [];
+  for(let i=0;i<3000;i++) {
+    verts.push((Math.random()-0.5)*400, (Math.random()-0.5)*400, (Math.random()-0.5)*400);
+  }
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(verts,3));
+  const mat = new THREE.PointsMaterial({ color:0xffffff, size:0.3, sizeAttenuation:true });
+  G.scene.add(new THREE.Points(geo, mat));
+}
+
+function buildGround(z) {
+  // Floating platform
+  const geo = new THREE.CylinderGeometry(18, 16, 2, 7);
+  const mat = new THREE.MeshLambertMaterial({ color: new THREE.Color(z.color).multiplyScalar(0.15) });
+  const ground = new THREE.Mesh(geo, mat);
+  ground.position.y = -1.5;
+  ground.receiveShadow = true;
+  G.scene.add(ground);
+
+  // Ground plane (invisible collider level)
+  G.groundY = 0;
+}
+
+function buildCrystalCave(z) {
+  // Crystal clusters
+  const colors = [0x40e0d0, 0xa855f7, 0x06b6d4, 0xe0aaff];
+  for(let i=0;i<20;i++) {
+    const h = 1 + Math.random()*4;
+    const geo = new THREE.ConeGeometry(0.2+Math.random()*0.4, h, 5+Math.floor(Math.random()*3));
+    const mat = new THREE.MeshPhongMaterial({
+      color: colors[Math.floor(Math.random()*colors.length)],
+      emissive: new THREE.Color(0x003355),
+      transparent: true, opacity: 0.85, shininess: 120
+    });
+    const mesh = new THREE.Mesh(geo, mat);
+    const angle = Math.random()*Math.PI*2;
+    const r = 6 + Math.random()*9;
+    mesh.position.set(Math.cos(angle)*r, h/2-0.5, Math.sin(angle)*r);
+    mesh.rotation.z = (Math.random()-0.5)*0.3;
+    mesh.castShadow = true;
+    G.scene.add(mesh);
+    G.envObjects.push({ mesh, type:'crystal', baseY: mesh.position.y, phase: Math.random()*Math.PI*2 });
+  }
+
+  // Point lights inside crystals
+  [0x40e0d0, 0xa855f7].forEach((c,i) => {
+    const l = new THREE.PointLight(c, 1.5, 15);
+    l.position.set(Math.cos(i*2)*8, 2, Math.sin(i*2)*8);
+    G.scene.add(l);
+    G.envObjects.push({ light:l, type:'light-pulse', phase:i*Math.PI });
+  });
+}
+
+function buildSilentObservatory(z) {
+  // Large telescope structure
+  const baseMat = new THREE.MeshLambertMaterial({ color: 0x1a0a3e });
+
+  // Dome
+  const domeGeo = new THREE.SphereGeometry(4, 16, 8, 0, Math.PI*2, 0, Math.PI/2);
+  const dome = new THREE.Mesh(domeGeo, new THREE.MeshPhongMaterial({ color:0x0a0520, wireframe:true, opacity:0.4, transparent:true }));
+  dome.position.set(-8, 0, -6);
+  G.scene.add(dome);
+
+  // Obsidian pillars
+  for(let i=0;i<6;i++) {
+    const angle = (i/6)*Math.PI*2;
+    const geo = new THREE.BoxGeometry(0.5, 5+Math.random()*3, 0.5);
+    const mat = new THREE.MeshPhongMaterial({ color:0x0d0d1f, emissive:0x0d00ff, emissiveIntensity:0.1 });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.set(Math.cos(angle)*10, 2, Math.sin(angle)*10);
+    mesh.castShadow = true;
+    G.scene.add(mesh);
+  }
+
+  // Floating geometric orb (focus symbol)
+  const orbGeo = new THREE.IcosahedronGeometry(1.5, 1);
+  const orbMat = new THREE.MeshPhongMaterial({ color:0xa855f7, emissive:0x4a00aa, shininess:200, transparent:true, opacity:0.9 });
+  const orb = new THREE.Mesh(orbGeo, orbMat);
+  orb.position.set(0, 6, -4);
+  G.scene.add(orb);
+  G.envObjects.push({ mesh:orb, type:'spin-float', baseY:6, phase:0 });
+}
+
+function buildStarCradle(z) {
+  // Ethereal vortex
+  for(let ring=0;ring<5;ring++) {
+    const r = 3 + ring * 2.5;
+    const geo = new THREE.TorusGeometry(r, 0.06, 8, 64);
+    const hue = 0.7 + ring * 0.05;
+    const mat = new THREE.MeshBasicMaterial({ color: new THREE.Color().setHSL(hue, 1, 0.6), transparent:true, opacity:0.3-ring*0.04 });
+    const torus = new THREE.Mesh(geo, mat);
+    torus.rotation.x = Math.PI/2 + ring * 0.2;
+    torus.position.y = 3;
+    G.scene.add(torus);
+    G.envObjects.push({ mesh:torus, type:'ring-spin', speed:0.003*(ring+1)*((ring%2===0)?1:-1), axis:'y' });
+  }
+
+  // Star cradle center
+  const starGeo = new THREE.OctahedronGeometry(2, 0);
+  const starMat = new THREE.MeshPhongMaterial({ color:0xfcd34d, emissive:0x7c3aed, emissiveIntensity:0.5, transparent:true, opacity:0.8 });
+  const star = new THREE.Mesh(starGeo, starMat);
+  star.position.set(0, 4, 0);
+  G.scene.add(star);
+  G.envObjects.push({ mesh:star, type:'spin-float', baseY:4, phase:0 });
+
+  // Nebula particles
+  const particleGeo = new THREE.BufferGeometry();
+  const pVerts = [];
+  for(let i=0;i<500;i++) {
+    const a = Math.random()*Math.PI*2;
+    const r2 = 3 + Math.random()*10;
+    pVerts.push(Math.cos(a)*r2, Math.random()*8-2, Math.sin(a)*r2);
+  }
+  particleGeo.setAttribute('position', new THREE.Float32BufferAttribute(pVerts,3));
+  const pMat = new THREE.PointsMaterial({ color:0xc084fc, size:0.12, transparent:true, opacity:0.6 });
+  G.scene.add(new THREE.Points(particleGeo, pMat));
+}
+
+function buildGreenSanctuary(z) {
+  // Glowing grass plane
+  const grassMat = new THREE.MeshLambertMaterial({ color:0x003300 });
+  const gPlane = new THREE.CircleGeometry(16, 32);
+  const grass = new THREE.Mesh(gPlane, grassMat);
+  grass.rotation.x = -Math.PI/2;
+  grass.position.y = 0.01;
+  G.scene.add(grass);
+
+  // Neon trees
+  for(let i=0;i<8;i++) {
+    const angle = (i/8)*Math.PI*2;
+    const r = 7 + Math.random()*4;
+    // Trunk
+    const trunk = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.15, 0.2, 3, 6),
+      new THREE.MeshLambertMaterial({ color:0x2d1b00 })
+    );
+    trunk.position.set(Math.cos(angle)*r, 1.5, Math.sin(angle)*r);
+    G.scene.add(trunk);
+    // Canopy
+    const canopy = new THREE.Mesh(
+      new THREE.SphereGeometry(1.5, 8, 6),
+      new THREE.MeshPhongMaterial({ color:0x39ff14, emissive:0x007700, emissiveIntensity:0.3, transparent:true, opacity:0.85 })
+    );
+    canopy.position.set(Math.cos(angle)*r, 4, Math.sin(angle)*r);
+    G.scene.add(canopy);
+    G.envObjects.push({ mesh:canopy, type:'pulse-scale', baseScale:1, phase: i*0.5 });
+  }
+
+  // Stone ruins / movement markers
+  const markerPositions = [[3,0,3],[-3,0,3],[0,0,-5],[5,0,0],[-5,0,0]].filter((v,i)=>i<4);
+  markerPositions.forEach(pos => {
+    const mesh = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.6, 0.7, 0.3, 8),
+      new THREE.MeshPhongMaterial({ color:0x1a1a1a, emissive:0x39ff14, emissiveIntensity:0.6 })
+    );
+    mesh.position.set(pos[0], 0.15, pos[2] || 0);
+    G.scene.add(mesh);
+  });
+}
+
+function buildNexusGate(z) {
+  // Nexus gate: floating icosahedron (the Nexus Orb)
+  const geo = new THREE.IcosahedronGeometry(1.2, 1);
+  const mat = new THREE.MeshPhongMaterial({
+    color: 0xffffff, emissive: new THREE.Color(z.color),
+    emissiveIntensity: 0.8, shininess: 200, wireframe: false,
+    transparent: true, opacity: 0.9
+  });
+  G.nexusGate = new THREE.Mesh(geo, mat);
+  G.nexusGate.position.set(0, 5, -8);
+  G.scene.add(G.nexusGate);
+
+  // Gate ring
+  const ringGeo = new THREE.TorusGeometry(2.5, 0.12, 8, 48);
+  const ringMat = new THREE.MeshBasicMaterial({ color: z.color, transparent: true, opacity: 0.6 });
+  const ring = new THREE.Mesh(ringGeo, ringMat);
+  ring.position.set(0, 5, -8);
+  G.scene.add(ring);
+  G.envObjects.push({ mesh:ring, type:'ring-spin', speed:0.008, axis:'y' });
+
+  // Glow point
+  const glow = new THREE.PointLight(z.color, 2, 12);
+  glow.position.copy(G.nexusGate.position);
+  G.scene.add(glow);
+  G.envObjects.push({ light:glow, type:'light-pulse', phase:0 });
+}
+
+// ─── DRAGON BUILDER ─────────────────────────────────────
+// ─── MODELOS 3D REALES (Blender → glTF) ───────────────────────────
+// Si existe /models/dragon_<type>.glb lo usamos; si no (o falla la carga),
+// se cae de vuelta al dragón geométrico procedural de siempre.
+// Cuando exportes tus dragones de Blender a .glb, colócalos en /models/
+// con estos nombres exactos: dragon_void.glb, dragon_nebula.glb,
+// dragon_crystal.glb, dragon_neon.glb — sin tocar nada más de este archivo.
+const DRAGON_MODEL_PATHS = {
+  void:    'models/dragon_void.glb',
+  nebula:  'models/dragon_nebula.glb',
+  crystal: 'models/dragon_crystal.glb',
+  neon:    'models/dragon_neon.glb'
+};
+const dragonModelCache = {};
+const gltfLoader = (typeof THREE !== 'undefined' && THREE.GLTFLoader) ? new THREE.GLTFLoader() : null;
+
+function tryLoadDragonModel(type, onSuccess, onFallback) {
+  if (!gltfLoader || !DRAGON_MODEL_PATHS[type]) { onFallback(); return; }
+  if (dragonModelCache[type]) { onSuccess(dragonModelCache[type].clone(true)); return; }
+  gltfLoader.load(
+    DRAGON_MODEL_PATHS[type],
+    (gltf) => {
+      const model = gltf.scene;
+      model.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+      dragonModelCache[type] = model;
+      onSuccess(model.clone(true));
+    },
+    undefined,
+    () => onFallback() // no existe el .glb todavía — seguimos con el procedural
+  );
+}
+
+function buildDragon(type, z) {
+  const dragonColors = {
+    void:    { body:0x1a1a3e, accent:0x7c3aed, glyph:0x40e0d0, emissive:0x0d00ff },
+    nebula:  { body:0x7c3aed, accent:0xc084fc, glyph:0xfcd34d, emissive:0x4a00ff },
+    crystal: { body:0x40e0d0, accent:0xa855f7, glyph:0xffffff, emissive:0x004455 },
+    neon:    { body:0x0d0d0d, accent:0x39ff14, glyph:0xa855f7, emissive:0x003300 }
+  };
+  const c = dragonColors[type];
+
+  const dragonGroup = new THREE.Group();
+
+  // Body (faceted)
+  const bodyGeo = new THREE.DodecahedronGeometry(0.9, 0);
+  const bodyMat = new THREE.MeshPhongMaterial({ color:c.body, emissive:c.emissive, emissiveIntensity:0.3, shininess:80 });
+  const body = new THREE.Mesh(bodyGeo, bodyMat);
+  dragonGroup.add(body);
+
+  // Head
+  const headGeo = new THREE.OctahedronGeometry(0.55, 0);
+  const headMat = new THREE.MeshPhongMaterial({ color:c.body, emissive:c.emissive, emissiveIntensity:0.4 });
+  const head = new THREE.Mesh(headGeo, headMat);
+  head.position.set(0, 0.9, 0.55);
+  head.scale.set(1, 0.8, 1);
+  dragonGroup.add(head);
+
+  // Eyes
+  [-0.2, 0.2].forEach(x => {
+    const eye = new THREE.Mesh(
+      new THREE.SphereGeometry(0.09, 6, 6),
+      new THREE.MeshBasicMaterial({ color:c.accent })
+    );
+    eye.position.set(x, 1.05, 0.98);
+    dragonGroup.add(eye);
+    // Pupil glow
+    const eLight = new THREE.PointLight(c.accent, 0.5, 2);
+    eLight.position.copy(eye.position);
+    dragonGroup.add(eLight);
+  });
+
+  // Wings (flat planes with geometry)
+  [-1, 1].forEach(side => {
+    const wingGeo = new THREE.BufferGeometry();
+    const wv = new Float32Array([
+      0,0,0,  side*1.8, 0.8, 0.2,  side*1.4, 0.2, 0.6,
+      0,0,0,  side*1.4, 0.2, 0.6,  side*0.6, -0.2, 0.4
+    ]);
+    wingGeo.setAttribute('position', new THREE.Float32BufferAttribute(wv,3));
+    wingGeo.computeVertexNormals();
+    const wingMat = new THREE.MeshPhongMaterial({ color:c.accent, transparent:true, opacity:0.7, side:THREE.DoubleSide });
+    const wing = new THREE.Mesh(wingGeo, wingMat);
+    wing.position.set(0, 0.3, 0);
+    dragonGroup.add(wing);
+    G.envObjects.push({ mesh:wing, type:'wing-flap', phase: side < 0 ? 0 : Math.PI, side });
+  });
+
+  // Tail
+  const tailGeo = new THREE.ConeGeometry(0.15, 1.2, 5);
+  const tail = new THREE.Mesh(tailGeo, bodyMat);
+  tail.position.set(0, -0.3, -0.9);
+  tail.rotation.x = 0.5;
+  dragonGroup.add(tail);
+
+  // Crystal Orb on chest
+  const orbGeo = new THREE.IcosahedronGeometry(0.3, 1);
+  const orbMat = new THREE.MeshPhongMaterial({ color:c.glyph, emissive:c.accent, emissiveIntensity:1, shininess:300, transparent:true, opacity:0.9 });
+  const orbMesh = new THREE.Mesh(orbGeo, orbMat);
+  orbMesh.position.set(0, 0.05, 0.8);
+  dragonGroup.add(orbMesh);
+  G.envObjects.push({ mesh:orbMesh, type:'spin-float', baseY:0.05, phase:0, local:true });
+
+  // Scale + position
+  dragonGroup.scale.set(1.4, 1.4, 1.4);
+  dragonGroup.position.set(0, 2.5, 0);
+  dragonGroup.castShadow = true;
+  G.scene.add(dragonGroup);
+
+  G.dragon = {
+    group: dragonGroup,
+    head,
+    orbLight: (() => { const l = new THREE.PointLight(c.accent, 1, 8); dragonGroup.add(l); l.position.set(0,0,0.8); return l; })(),
+    type,
+    vel: new THREE.Vector3(),
+    onGround: true,
+    jumpCooldown: 0,
+    animPhase: 0,
+    energy: G.pups.find(p=>p.id===type)?.energy || 80
+  };
+
+  // Si hay un .glb exportado de Blender para este dragón, lo cambiamos por
+  // encima del modelo procedural sin tocar física ni posición (dragonGroup
+  // sigue siendo el mismo objeto que anima/mueve el resto del juego).
+  tryLoadDragonModel(type, (model) => {
+    while (dragonGroup.children.length) {
+      const child = dragonGroup.children.pop();
+      child.geometry?.dispose?.();
+      child.material?.dispose?.();
+    }
+    dragonGroup.add(model);
+  }, () => {} ); // sin .glb todavía: se queda el dragón geométrico de siempre
+}
+
+// ─── ORB SPAWNING ────────────────────────────────────────
+function spawnOrbs(count, z) {
+  const types = ['focus','heart','voice','move'];
+  for(let i=0;i<count;i++) {
+    const t = types[Math.floor(Math.random()*types.length)];
+    const angle = (i/count)*Math.PI*2 + Math.random()*0.8;
+    const r = 3 + Math.random()*8;
+    const h = 1.5 + Math.random()*3;
+
+    const geo = new THREE.SphereGeometry(0.35, 8, 8);
+    const colors = { focus:0xa855f7, heart:0xc084fc, voice:0x40e0d0, move:0x39ff14 };
+    const mat = new THREE.MeshPhongMaterial({ color:colors[t], emissive:colors[t], emissiveIntensity:0.5, transparent:true, opacity:0.9 });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.set(Math.cos(angle)*r, h, Math.sin(angle)*r);
+    G.scene.add(mesh);
+
+    const light = new THREE.PointLight(colors[t], 0.8, 4);
+    light.position.copy(mesh.position);
+    G.scene.add(light);
+
+    G.orbs.push({ mesh, light, type:t, phase:Math.random()*Math.PI*2, baseY:h, collected:false });
+  }
+}
+
+// ─── ANIMATION LOOP ──────────────────────────────────────
+function animate() {
+  if(!G.running) return;
+  // Use XR-compatible animation loop (works in both VR and desktop)
+  G.renderer.setAnimationLoop(function() {
+    if(!G.running) { G.renderer.setAnimationLoop(null); return; }
+    const dt = Math.min(G.clock.getDelta(), 0.05);
+    G.frame++;
+
+    if(!G.paused) {
+      updateInput(dt);
+      updateDragonVR(dt);
+      updateOrbs(dt);
+      updateEnv(dt);
+      if(!G.renderer.xr.isPresenting) updateCamera(dt);
+      updateVRCamera(dt);
+      updateNexus(dt);
+      addVRControllersToScene(dt);
+      checkSessionTimer();
+    }
+    G.renderer.render(G.scene, G.camera);
+    if(!G.renderer.xr.isPresenting) updateMinimap();
+  });
+}
+
+function addVRControllersToScene(dt) {
+  if(!G.vrController0 || !G.renderer.xr.isPresenting) return;
+  // Re-add controllers if needed (scene was rebuilt)
+  if(!G.scene.children.includes(G.vrController0)) {
+    G.scene.add(G.vrController0);
+    G.scene.add(G.vrController1);
+    G.scene.add(G.vrGrip0);
+    G.scene.add(G.vrGrip1);
+  }
+}
+
+function updateVRCamera(dt) {
+  if(!G.renderer.xr.isPresenting || !G.dragon) return;
+
+  // In VR: camera rig follows dragon at comfortable distance + height
+  const xrCamera = G.renderer.xr.getCamera(G.camera);
+  const dragonPos = G.dragon.group.position;
+
+  // Move the reference space / camera rig to follow dragon (seated scale)
+  // We adjust the scene's "player rig" position
+  G.camera.position.set(
+    dragonPos.x,
+    dragonPos.y + 1.6,  // eye level above dragon
+    dragonPos.z + 3.5
+  );
+}
+
+function updateDragonVR(dt) {
+  // In VR, add controller-based movement
+  if(G.renderer.xr.isPresenting && G.vrController0) {
+    // Use controller thumbstick if available (from gamepad in XR session)
+    const session = G.renderer.xr.getSession();
+    if(session) {
+      for(const source of session.inputSources) {
+        if(source.gamepad && source.handedness === 'left') {
+          const axes = source.gamepad.axes;
+          if(Math.abs(axes[2]) > 0.1) G.touch.jx = axes[2];
+          if(Math.abs(axes[3]) > 0.1) G.touch.jy = axes[3];
+        }
+      }
+    }
+  }
+  updateDragon(dt);
+}
+
+// ─── INPUT UPDATE ────────────────────────────────────────
+function updateInput(dt) {
+  // Gamepad
+  if(G.gamepadIndex >= 0) {
+    const gp = navigator.getGamepads()[G.gamepadIndex];
+    if(gp) {
+      // Left stick → movement
+      G.touch.jx = Math.abs(gp.axes[0]) > 0.1 ? gp.axes[0] : 0;
+      G.touch.jy = Math.abs(gp.axes[1]) > 0.1 ? gp.axes[1] : 0;
+      // A/Cross → jump
+      if(gp.buttons[0]?.pressed && G.dragon.onGround && G.dragon.jumpCooldown <= 0) dragonJump();
+      // B/Circle → action
+      if(gp.buttons[1]?.pressed) dragonAction();
+      // Y/Triangle → calm mode
+      if(gp.buttons[3]?.value > 0.5) openCalmMode();
+      // Start/Options → pause
+      if(gp.buttons[9]?.pressed) togglePause();
+      // Right stick → camera rotation (simplified)
+      const cx = Math.abs(gp.axes[2]) > 0.15 ? gp.axes[2] : 0;
+      G.camera.position.x += cx * 0.08;
+    }
+  }
+
+  // Keyboard fallback movement integration
+  let kx = 0, kz = 0;
+  if(G.keys['KeyA'] || G.keys['ArrowLeft']) kx = -1;
+  if(G.keys['KeyD'] || G.keys['ArrowRight']) kx = 1;
+  if(G.keys['KeyW'] || G.keys['ArrowUp']) kz = -1;
+  if(G.keys['KeyS'] || G.keys['ArrowDown']) kz = 1;
+  if(kx !== 0 || kz !== 0) {
+    G.touch.jx = kx;
+    G.touch.jy = kz;
+  } else if(!G.gamepadIndex >= 0) {
+    G.touch.jx *= 0.8;
+    G.touch.jy *= 0.8;
+  }
+
+  // Gesture-based control
+  if(G.cameraActive) {
+    if(G.gesture === 'open_hand') dragonAction();
+    if(G.gesture === 'swipe_up') { if(G.dragon.onGround) dragonJump(); }
+  }
+}
+
+// ─── DRAGON UPDATE ───────────────────────────────────────
+function updateDragon(dt) {
+  if(!G.dragon) return;
+  const d = G.dragon;
+  d.animPhase += dt * 2;
+
+  // Movement from joystick / keys
+  const speed = 6;
+  const camAngle = Math.atan2(G.camera.position.x - d.group.position.x, G.camera.position.z - d.group.position.z);
+  const mx = G.touch.jx * speed * dt;
+  const mz = G.touch.jy * speed * dt;
+
+  // World-relative movement
+  d.group.position.x += mx * Math.cos(camAngle) + mz * Math.sin(camAngle) * 0.0;
+  d.group.position.z += mz * Math.cos(camAngle) * 0.0 + mx * Math.sin(camAngle);
+  d.group.position.x += -mz * Math.sin(camAngle);
+  d.group.position.z += -mz * Math.cos(camAngle);
+
+  // Simple boundary
+  const bd = 14;
+  d.group.position.x = Math.max(-bd, Math.min(bd, d.group.position.x));
+  d.group.position.z = Math.max(-bd, Math.min(bd, d.group.position.z));
+
+  // Gravity
+  if(!d.onGround) {
+    d.vel.y -= 12 * dt;
+    d.group.position.y += d.vel.y * dt;
+    if(d.group.position.y <= 2.5) {
+      d.group.position.y = 2.5;
+      d.vel.y = 0;
+      d.onGround = true;
+    }
+  }
+  if(d.jumpCooldown > 0) d.jumpCooldown -= dt;
+
+  // Rotation toward movement direction
+  if(Math.abs(G.touch.jx) > 0.1 || Math.abs(G.touch.jy) > 0.1) {
+    const targetAngle = Math.atan2(G.touch.jx, G.touch.jy);
+    const cur = d.group.rotation.y;
+    d.group.rotation.y += (targetAngle - cur) * 0.12;
+  }
+
+  // Hover bob
+  if(d.onGround) {
+    d.group.position.y = 2.5 + Math.sin(d.animPhase * 0.8) * 0.15;
+  }
+
+  // Aura fluctuation (for neon dragon)
+  if(d.type === 'neon') {
+    G.aura = 0.5 + (Math.abs(G.touch.jx) + Math.abs(G.touch.jy)) * 0.25;
+    document.getElementById('aura-fill').style.height = (G.aura * 100) + '%';
+  }
+
+  // Check orb collection
+  G.orbs.forEach(orb => {
+    if(orb.collected) return;
+    const dist = d.group.position.distanceTo(orb.mesh.position);
+    if(dist < 1.8) collectOrb(orb);
+  });
+
+  // Check nexus gate proximity
+  if(G.nexusGate) {
+    const nd = d.group.position.distanceTo(G.nexusGate.position);
+    if(nd < 3) {
+      showNotif('✦ Nexus Gate activado — ¡El Nexo responde!');
+      gainXP(50);
+    }
+  }
+}
+
+function dragonJump() {
+  if(!G.dragon || !G.dragon.onGround) return;
+  G.dragon.vel.y = 7;
+  G.dragon.onGround = false;
+  G.dragon.jumpCooldown = 0.5;
+  playSound('jump');
+  hapticPulse(50, 0.5);
+}
+
+function dragonAction() {
+  if(!G.dragon) return;
+  // Action: emit pulse, gain aura
+  G.aura = Math.min(1, G.aura + 0.15);
+  playSound('action');
+  hapticPulse(30, 0.3);
+  showCombo('✦ NEXUS PULSE');
+}
+
+// ─── ORB UPDATE ──────────────────────────────────────────
+function updateOrbs(dt) {
+  G.orbs.forEach(orb => {
+    if(orb.collected) return;
+    orb.phase += dt;
+    orb.mesh.position.y = orb.baseY + Math.sin(orb.phase * 1.5) * 0.3;
+    orb.mesh.rotation.y += dt;
+    orb.light.position.copy(orb.mesh.position);
+  });
+}
+
+function collectOrb(orb) {
+  orb.collected = true;
+  G.scene.remove(orb.mesh);
+  G.scene.remove(orb.light);
+
+  const pts = { focus:10, heart:8, voice:12, move:9 };
+  const gain = pts[orb.type] || 10;
+  G.score += gain * (1 + Math.floor(G.combo/3));
+  G.combo++;
+  G.comboTimer = 3;
+  document.getElementById('score-val').textContent = G.score.toLocaleString();
+
+  gainXP(gain);
+  playSound('collect');
+  hapticPulse(20, 0.2);
+  spawnXPPopup(orb.mesh.position, '+' + gain);
+
+  if(G.combo >= 3) showCombo('x' + G.combo + ' COMBO!');
+
+  // Respawn after delay
+  const z = G.zones[G.currentZone];
+  setTimeout(() => {
+    if(!G.running) return;
+    const angle = Math.random() * Math.PI * 2;
+    const r = 3 + Math.random() * 8;
+    orb.mesh.position.set(Math.cos(angle)*r, orb.baseY, Math.sin(angle)*r);
+    orb.light.position.copy(orb.mesh.position);
+    orb.collected = false;
+    G.scene.add(orb.mesh);
+    G.scene.add(orb.light);
+  }, 5000);
+}
+
+// ─── ENV UPDATE ──────────────────────────────────────────
+function updateEnv(dt) {
+  G.envObjects.forEach(obj => {
+    if(obj.type === 'spin-float') {
+      obj.phase += dt;
+      if(obj.mesh) {
+        if(!obj.local) obj.mesh.position.y = obj.baseY + Math.sin(obj.phase) * 0.3;
+        obj.mesh.rotation.x += dt * 0.4;
+        obj.mesh.rotation.y += dt * 0.6;
+      }
+    } else if(obj.type === 'ring-spin') {
+      if(obj.mesh) {
+        if(obj.axis === 'y') obj.mesh.rotation.y += obj.speed || dt * 0.5;
+        else obj.mesh.rotation.x += obj.speed || dt * 0.3;
+      }
+    } else if(obj.type === 'light-pulse') {
+      obj.phase = (obj.phase||0) + dt;
+      if(obj.light) obj.light.intensity = 1.5 + Math.sin(obj.phase * 2) * 0.5;
+    } else if(obj.type === 'crystal') {
+      obj.phase += dt;
+      obj.mesh.position.y = obj.baseY + Math.sin(obj.phase + obj.mesh.position.x) * 0.06;
+    } else if(obj.type === 'wing-flap') {
+      obj.phase += dt * 4;
+      if(obj.mesh) {
+        const flap = Math.sin(obj.phase) * 0.3;
+        obj.mesh.rotation.z = flap * obj.side;
+      }
+    } else if(obj.type === 'pulse-scale') {
+      obj.phase += dt;
+      if(obj.mesh) {
+        const s = 1 + Math.sin(obj.phase) * 0.08;
+        obj.mesh.scale.set(s, s, s);
+      }
+    }
+  });
+}
+
+// ─── NEXUS GATE UPDATE ──────────────────────────────────
+function updateNexus(dt) {
+  if(!G.nexusGate) return;
+  G.nexusPulse += dt;
+  G.nexusGate.rotation.x += dt * 0.3;
+  G.nexusGate.rotation.y += dt * 0.5;
+}
+
+// ─── CAMERA UPDATE ──────────────────────────────────────
+function updateCamera(dt) {
+  if(!G.dragon) return;
+  if(G.settings.reducedMotion) {
+    G.camera.position.set(0, 6, 14);
+    G.camera.lookAt(G.dragon.group.position);
+    return;
+  }
+  const target = new THREE.Vector3(
+    G.dragon.group.position.x,
+    G.dragon.group.position.y + 3,
+    G.dragon.group.position.z + 12
+  );
+  G.camera.position.lerp(target, dt * 2.5);
+  const lookTarget = new THREE.Vector3(
+    G.dragon.group.position.x,
+    G.dragon.group.position.y + 1,
+    G.dragon.group.position.z
+  );
+  G.camera.lookAt(lookTarget);
+}
+
+// ─── MINIMAP ────────────────────────────────────────────
+function updateMinimap() {
+  if(!G.mapCtx || !G.dragon) return;
+  const ctx = G.mapCtx;
+  ctx.clearRect(0,0,100,100);
+
+  // Background
+  ctx.fillStyle = 'rgba(4,2,14,0.85)';
+  ctx.fillRect(0,0,100,100);
+
+  // Zone boundary circle
+  ctx.beginPath();
+  ctx.arc(50,50,44,0,Math.PI*2);
+  ctx.strokeStyle = 'rgba(124,58,237,0.4)';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // Orbs
+  G.orbs.forEach(orb => {
+    if(orb.collected) return;
+    const mx = 50 + orb.mesh.position.x * 2.8;
+    const my = 50 + orb.mesh.position.z * 2.8;
+    const colors2 = { focus:'#a855f7', heart:'#c084fc', voice:'#40e0d0', move:'#39ff14' };
+    ctx.fillStyle = colors2[orb.type];
+    ctx.beginPath();
+    ctx.arc(mx, my, 2, 0, Math.PI*2);
+    ctx.fill();
+  });
+
+  // Nexus gate
+  if(G.nexusGate) {
+    const nx = 50 + G.nexusGate.position.x * 2.8;
+    const ny = 50 + G.nexusGate.position.z * 2.8;
+    ctx.fillStyle = '#fcd34d';
+    ctx.beginPath();
+    ctx.arc(nx, ny, 3, 0, Math.PI*2);
+    ctx.fill();
+  }
+
+  // Dragon (player)
+  const dx = 50 + G.dragon.group.position.x * 2.8;
+  const dy = 50 + G.dragon.group.position.z * 2.8;
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.arc(dx, dy, 4, 0, Math.PI*2);
+  ctx.fill();
+  ctx.strokeStyle = '#fcd34d';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+}
+
+// ─── XP / LEVEL ─────────────────────────────────────────
+function gainXP(amount) {
+  G.xp += amount;
+  const xpNeeded = G.level * 100;
+  if(G.xp >= xpNeeded) {
+    G.level++;
+    G.xp -= xpNeeded;
+    document.getElementById('level-val').textContent = G.level;
+    showNotif('⬆ Nivel ' + G.level + ' — ¡El Nexo crece!');
+    hapticPulse(200, 0.8);
+
+    // Boost dragon energy
+    G.pups.forEach(p => { p.energy = Math.min(100, p.energy + 5); });
+    updatePupsHUD();
+  }
+}
+
+function spawnXPPopup(pos, text) {
+  const el = document.createElement('div');
+  el.className = 'xp-pop';
+  el.textContent = text;
+  const screenPos = pos.clone().project(G.camera);
+  el.style.left = ((screenPos.x + 1) / 2 * innerWidth) + 'px';
+  el.style.top = (-(screenPos.y - 1) / 2 * innerHeight) + 'px';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1300);
+}
+
+// ─── SESSION TIMER ───────────────────────────────────────
+function checkSessionTimer() {
+  if(!G.settings.shortSession) return;
+  const elapsed = (Date.now() - G.sessionStart) / 1000 / 60;
+  if(elapsed >= 10 && !G.paused) {
+    openCalmMode();
+    showNotif('⏱ Pausa recomendada — 10 minutos de juego');
+  }
+}
+
+// ─── AUDIO (Web Audio API) ──────────────────────────────
+function initAudio() {
+  try {
+    G.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  } catch(e) {}
+}
+
+function playSound(type) {
+  if(!G.audioCtx) return;
+  const ctx = G.audioCtx;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+
+  const sounds = {
+    jump:    { freq:440, type:'sine', duration:0.15, vol:0.2 },
+    collect: { freq:660, type:'triangle', duration:0.2, vol:0.25 },
+    action:  { freq:880, type:'sine', duration:0.12, vol:0.15 },
+    level:   { freq:523, type:'square', duration:0.4, vol:0.3 },
+    calm:    { freq:220, type:'sine', duration:1.0, vol:0.15 }
+  };
+  const s = sounds[type] || sounds.collect;
+
+  osc.frequency.setValueAtTime(s.freq, ctx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(s.freq * 1.5, ctx.currentTime + s.duration);
+  osc.type = s.type;
+  gain.gain.setValueAtTime(s.vol * G.settings.volSfx, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + s.duration);
+
+  osc.start(ctx.currentTime);
+  osc.stop(ctx.currentTime + s.duration);
+}
+
+function playTherapeuticMusic(zone) {
+  // ÑUHU ambient MP3 tracks mapped to zones
+  const trackMap = {
+    crystal: 'nuhu_forest.mp3',
+    silent: 'nuhu_breathings.mp3',
+    star: 'nuhu_hollow.mp3',
+    green: 'reencuentro_suave.mp3'
+  };
+  const src = trackMap[zone] || 'nuhu_forest.mp3';
+
+  if (G.bgAudio) {
+    try { G.bgAudio.pause(); G.bgAudio.currentTime = 0; } catch(e) {}
+  }
+  if (G.musicNode) { try { G.musicNode.stop(); } catch(e) {} G.musicNode = null; }
+
+  const a = new Audio(src);
+  a.loop = true;
+  a.volume = Math.max(0.05, (G.settings.volMusic || 0.5) * 0.55);
+  a.play().catch(function(){});
+  G.bgAudio = a;
+
+  // Soft harmonic pad under the track
+  if (!G.audioCtx) return;
+  try {
+    const ctx = G.audioCtx;
+    const zoneFreqs = { crystal:432, silent:396, star:528, green:417 };
+    const freq = zoneFreqs[zone] || 432;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const filter = ctx.createBiquadFilter();
+    osc.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = freq; osc.type = 'sine';
+    filter.type = 'lowpass'; filter.frequency.value = 600;
+    gain.gain.setValueAtTime(0, ctx.currentTime);
+    gain.gain.linearRampToValueAtTime((G.settings.volMusic || 0.5) * 0.035, ctx.currentTime + 2.5);
+    osc.start();
+    G.musicNode = osc;
+  } catch(e) {}
+}
+
+window.addEventListener('gamepadconnected', e => {
+  G.gamepadIndex = e.gamepad.index;
+  showNotif('🎮 Gamepad conectado: ' + e.gamepad.id.substring(0,30));
+});
+window.addEventListener('gamepaddisconnected', e => {
+  G.gamepadIndex = -1;
+  showNotif('🎮 Gamepad desconectado');
+});
+
+// ─── HAPTIC (Gamepad vibration) ─────────────────────────
+function hapticPulse(duration, intensity) {
+  if(!G.settings.haptic || G.gamepadIndex < 0) return;
+  try {
+    const gp = navigator.getGamepads()[G.gamepadIndex];
+    if(gp?.vibrationActuator) {
+      gp.vibrationActuator.playEffect('dual-rumble', {
+        startDelay: 0, duration, weakMagnitude: intensity * 0.5, strongMagnitude: intensity
+      });
+    }
+  } catch(e) {}
+}
+
+// ─── CAMERA / MEDIAPIPE (tracking real de manos, 100% local) ─────
+// PRIVACIDAD: HandLandmarker corre por completo en el navegador (WASM/GPU).
+// Los landmarks viven solo en memoria de esta función; nunca se escriben a
+// disco, localStorage ni se envían a ningún servidor. Al llamar stopCamera()
+// se descarta todo el estado y se libera la cámara.
+let mpHandLandmarker = null;
+let mpLoadAttempted = false;
+let mpLastVideoTime = -1;
+
+async function loadHandLandmarker() {
+  if (mpHandLandmarker) return true;
+  if (mpLoadAttempted) return false; // ya falló antes, no reintentar cada vez
+  mpLoadAttempted = true;
+  try {
+    const { HandLandmarker, FilesetResolver } = await import(
+      'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs'
+    );
+    const fileset = await FilesetResolver.forVisionTasks(
+      'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm'
+    );
+    mpHandLandmarker = await HandLandmarker.createFromOptions(fileset, {
+      baseOptions: {
+        modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task',
+        delegate: 'GPU'
+      },
+      runningMode: 'VIDEO',
+      numHands: 1
+    });
+    return true;
+  } catch (e) {
+    console.warn('MediaPipe no disponible, usando detección por diferencia de píxeles como respaldo.', e);
+    mpHandLandmarker = null;
+    return false;
+  }
+}
+
+let mpFaceLandmarker = null;
+let mpFaceLoadAttempted = false;
+
+async function loadFaceLandmarker() {
+  if (mpFaceLandmarker) return true;
+  if (mpFaceLoadAttempted) return false;
+  mpFaceLoadAttempted = true;
+  try {
+    const { FaceLandmarker, FilesetResolver } = await import(
+      'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs'
+    );
+    const fileset = await FilesetResolver.forVisionTasks(
+      'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm'
+    );
+    mpFaceLandmarker = await FaceLandmarker.createFromOptions(fileset, {
+      baseOptions: {
+        modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task',
+        delegate: 'GPU'
+      },
+      runningMode: 'VIDEO',
+      numFaces: 1,
+      outputFaceBlendshapes: false // no necesitamos el mesh completo, solo posición de pocos puntos
+    });
+    return true;
+  } catch (e) {
+    console.warn('Face tracking no disponible, se usa solo la mano.', e);
+    mpFaceLandmarker = null;
+    return false;
+  }
+}
+
+async function startCamera() {
+  try {
+    const video = document.getElementById('cam-video');
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { width:320, height:240, facingMode:'user' } });
+    video.srcObject = stream;
+    G.cameraActive = true;
+    document.getElementById('cam-panel').style.display = 'flex';
+    document.getElementById('tog-camera').classList.add('on');
+
+    showNotif('📷 Cámara activa — cargando reconocimiento…');
+    const handsReady = await loadHandLandmarker();
+    if (handsReady && G.cameraActive) {
+      const faceReady = await loadFaceLandmarker(); // best-effort, no bloquea si falla
+      trackHandsMediaPipe(video, faceReady);
+      showNotif(faceReady
+        ? '✋🙂 Manos + inclinación de cabeza activos (MediaPipe, local)'
+        : '✋ Tracking de manos activo (MediaPipe, local)');
+    } else if (G.cameraActive) {
+      // Respaldo: sin red o navegador sin soporte para el modelo
+      startMotionDetection(video);
+      showNotif('📷 Cámara activa — modo de respaldo (movimiento)');
+    }
+  } catch(e) {
+    showNotif('⚠ No se pudo acceder a la cámara');
+  }
+}
+
+// Distancia euclidiana entre dos landmarks normalizados {x,y}
+function lmDist(a, b) {
+  return Math.hypot(a.x - b.x, a.y - b.y);
+}
+
+function drawHandSkeleton(ctx, lm) {
+  const W = 140, H = 105;
+  const px = p => 140 - p.x * W; // espejo horizontal para calzar con el video
+  const py = p => p.y * H;
+  const HAND_CONNECTIONS = [
+    [0,1],[1,2],[2,3],[3,4],           // pulgar
+    [0,5],[5,6],[6,7],[7,8],           // índice
+    [5,9],[9,10],[10,11],[11,12],      // medio
+    [9,13],[13,14],[14,15],[15,16],    // anular
+    [13,17],[17,18],[18,19],[19,20],   // meñique
+    [0,17]
+  ];
+  ctx.strokeStyle = 'rgba(57,255,20,0.65)';
+  ctx.lineWidth = 1.4;
+  HAND_CONNECTIONS.forEach(([a,b]) => {
+    ctx.beginPath();
+    ctx.moveTo(px(lm[a]), py(lm[a]));
+    ctx.lineTo(px(lm[b]), py(lm[b]));
+    ctx.stroke();
+  });
+  ctx.fillStyle = 'rgba(196,255,60,0.9)';
+  lm.forEach(p => {
+    ctx.beginPath();
+    ctx.arc(px(p), py(p), 1.6, 0, Math.PI*2);
+    ctx.fill();
+  });
+}
+
+function applyGesture(name) {
+  G.gesture = name;
+  switch(name) {
+    case 'swipe_up':
+      updateGestureDisplay('↑ Saltar');
+      if (G.dragon?.onGround) dragonJump();
+      break;
+    case 'swipe_left':
+      updateGestureDisplay('← Izquierda');
+      G.touch.jx = -0.7;
+      break;
+    case 'swipe_right':
+      updateGestureDisplay('→ Derecha');
+      G.touch.jx = 0.7;
+      break;
+    case 'open_hand':
+      updateGestureDisplay('✋ Acción');
+      if (typeof dragonAction === 'function') dragonAction();
+      break;
+    case 'fist':
+      updateGestureDisplay('✊ Puño');
+      G.touch.jx *= 0.7;
+      break;
+    case 'searching':
+      updateGestureDisplay('— Buscando mano');
+      G.touch.jx *= 0.7;
+      break;
+    default:
+      updateGestureDisplay('— En espera');
+      G.touch.jx *= 0.7;
+  }
+}
+
+function trackHandsMediaPipe(video, useFace) {
+  const canvas = document.getElementById('cam-overlay');
+  const ctx = canvas.getContext('2d');
+  let prevWristX = null, prevWristY = null;
+  let idleFrames = 0;
+  let mpFaceLastTime = -1;
+
+  // Inclinación de cabeza como control alterno cuando no hay mano a la vista —
+  // pensado para sesiones donde usar las manos no es cómodo o posible.
+  function headTiltGesture() {
+    if (!useFace || !mpFaceLandmarker) return 'none';
+    if (video.currentTime === mpFaceLastTime) return null; // sin frame nuevo
+    mpFaceLastTime = video.currentTime;
+    let faceResult;
+    try {
+      faceResult = mpFaceLandmarker.detectForVideo(video, performance.now());
+    } catch(e) { return 'none'; }
+    if (!faceResult?.faceLandmarks?.length) return 'none';
+
+    const face = faceResult.faceLandmarks[0]; // 468 puntos normalizados, solo en memoria
+    const leftEye = face[33], rightEye = face[263], nose = face[1];
+    const eyeMidX = (leftEye.x + rightEye.x) / 2;
+    const eyeSpan = Math.abs(rightEye.x - leftEye.x) || 0.001;
+    const yaw = (nose.x - eyeMidX) / eyeSpan; // >0 gira a un lado, <0 al otro
+
+    // marcador visual simple de cabeza en el overlay
+    ctx.strokeStyle = 'rgba(125,211,252,0.55)';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.arc(140 - eyeMidX*140, ((leftEye.y+rightEye.y)/2)*105, 10, 0, Math.PI*2);
+    ctx.stroke();
+
+    if (Math.abs(yaw) > 0.18) return yaw > 0 ? 'swipe_left' : 'swipe_right'; // espejado
+    return 'none';
+  }
+
+  function loop() {
+    if (!G.cameraActive) return; // corta el ciclo — nada queda corriendo en segundo plano
+    requestAnimationFrame(loop);
+    if (video.readyState < 2 || video.currentTime === mpLastVideoTime) return;
+    mpLastVideoTime = video.currentTime;
+
+    let result;
+    try {
+      result = mpHandLandmarker.detectForVideo(video, performance.now());
+    } catch(e) { return; }
+
+    ctx.clearRect(0, 0, 140, 105);
+
+    if (result?.landmarks?.length) {
+      idleFrames = 0;
+      const lm = result.landmarks[0]; // 21 puntos normalizados 0–1, solo en memoria
+      drawHandSkeleton(ctx, lm);
+
+      const wrist = lm[0];
+      const fingers = [[8,5],[12,9],[16,13],[20,17]]; // [punta, nudillo] por dedo
+      const extended = fingers.filter(([tip, mcp]) =>
+        lmDist(lm[tip], wrist) > lmDist(lm[mcp], wrist) * 1.15
+      ).length;
+      const isOpen = extended >= 3;
+      const isFist = extended === 0;
+
+      let gesture = 'none';
+      if (prevWristX !== null) {
+        const dx = wrist.x - prevWristX;   // eje X (mano real; el overlay se dibuja espejado)
+        const dy = wrist.y - prevWristY;
+        if (dy < -0.05) {
+          gesture = 'swipe_up';
+        } else if (Math.abs(dx) > 0.045) {
+          gesture = dx > 0 ? 'swipe_left' : 'swipe_right'; // espejado respecto a la cámara
+        } else if (isFist) {
+          gesture = 'fist';
+        } else if (isOpen) {
+          gesture = 'open_hand';
+        }
+      }
+      prevWristX = wrist.x;
+      prevWristY = wrist.y;
+      applyGesture(gesture);
+    } else {
+      idleFrames++;
+      // Sin mano visible: probamos inclinación de cabeza como respaldo accesible
+      const headGesture = headTiltGesture();
+      if (headGesture && headGesture !== 'none') {
+        applyGesture(headGesture);
+      } else if (idleFrames > 6) {
+        applyGesture('searching');
+      }
+      prevWristX = null; prevWristY = null;
+    }
+  }
+  loop();
+}
+
+// ─── Respaldo sin modelo: detección por diferencia de píxeles ─────
+function startMotionDetection(video) {
+  const canvas = document.getElementById('cam-overlay');
+  const ctx = canvas.getContext('2d');
+  let prevFrame = null;
+  let frameCount = 0;
+
+  function processFrame() {
+    if(!G.cameraActive) return;
+    requestAnimationFrame(processFrame);
+    frameCount++;
+    if(frameCount % 3 !== 0) return; // Process every 3rd frame
+
+    ctx.drawImage(video, 0, 0, 140, 105);
+    const frame = ctx.getImageData(0, 0, 140, 105);
+    const data = frame.data;
+
+    if(prevFrame) {
+      let totalDiff = 0, topDiff = 0, bottomDiff = 0, leftDiff = 0, rightDiff = 0;
+      const w = 140, h = 105;
+
+      for(let i = 0; i < data.length; i += 4) {
+        const diff = Math.abs(data[i] - prevFrame[i]) + Math.abs(data[i+1] - prevFrame[i+1]) + Math.abs(data[i+2] - prevFrame[i+2]);
+        totalDiff += diff;
+        const px = (i/4) % w;
+        const py = Math.floor((i/4) / w);
+        if(py < h/2) topDiff += diff; else bottomDiff += diff;
+        if(px < w/2) leftDiff += diff; else rightDiff += diff;
+      }
+
+      const avg = totalDiff / (data.length / 4);
+
+      // Gesture detection
+      if(avg > 15) {
+        if(topDiff > bottomDiff * 2) {
+          G.gesture = 'swipe_up';
+          updateGestureDisplay('↑ Saltar');
+          if(G.dragon?.onGround) dragonJump();
+        } else if(leftDiff > rightDiff * 1.5) {
+          G.gesture = 'swipe_left';
+          updateGestureDisplay('← Izquierda');
+          G.touch.jx = -0.7;
+        } else if(rightDiff > leftDiff * 1.5) {
+          G.gesture = 'swipe_right';
+          updateGestureDisplay('→ Derecha');
+          G.touch.jx = 0.7;
+        } else if(avg > 30) {
+          G.gesture = 'open_hand';
+          updateGestureDisplay('✋ Acción');
+        }
+      } else {
+        G.gesture = 'none';
+        updateGestureDisplay('— En espera');
+        G.touch.jx *= 0.7;
+      }
+
+      // Draw motion overlay
+      ctx.strokeStyle = G.gesture !== 'none' ? 'rgba(57,255,20,0.6)' : 'rgba(100,200,255,0.2)';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(2, 2, 136, 101);
+
+      if(G.gesture !== 'none') {
+        ctx.fillStyle = 'rgba(57,255,20,0.15)';
+        ctx.fillRect(0, 0, 140, 105);
+      }
+    }
+
+    prevFrame = [...data];
+  }
+  processFrame();
+}
+
+function updateGestureDisplay(txt) {
+  const el = document.getElementById('gesture-display');
+  if(el) el.textContent = txt;
+}
+
+function stopCamera() {
+  G.cameraActive = false;
+  const video = document.getElementById('cam-video');
+  if(video.srcObject) {
+    video.srcObject.getTracks().forEach(t => t.stop()); // libera la cámara de verdad
+    video.srcObject = null;
+  }
+  mpLastVideoTime = -1; // ninguna coordenada de mano/rostro sobrevive al cierre
+  document.getElementById('cam-panel').style.display = 'none';
+  document.getElementById('tog-camera').classList.remove('on');
+}
+
+// ─── VOICE RECOGNITION ──────────────────────────────────
+function startVoice() {
+  if(!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    showNotif('⚠ Voz no soportada en este navegador');
+    return;
+  }
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  G.voiceRec = new SR();
+  G.voiceRec.lang = 'es-MX';
+  G.voiceRec.continuous = true;
+  G.voiceRec.interimResults = false;
+  G.voiceRec.onresult = e => {
+    const cmd = e.results[e.results.length-1][0].transcript.toLowerCase().trim();
+    handleVoiceCommand(cmd);
+  };
+  G.voiceRec.onerror = () => {};
+  G.voiceRec.onend = () => { if(G.voiceActive) G.voiceRec.start(); };
+  G.voiceRec.start();
+  G.voiceActive = true;
+  document.getElementById('voice-log').classList.add('on');
+  document.getElementById('tog-voice').classList.add('on');
+}
+
+function stopVoice() {
+  if(G.voiceRec) G.voiceRec.stop();
+  G.voiceActive = false;
+  document.getElementById('voice-log').classList.remove('on');
+  document.getElementById('tog-voice').classList.remove('on');
+}
+
+function handleVoiceCommand(cmd) {
+  document.getElementById('voice-txt').textContent = '"' + cmd + '"';
+
+  if(cmd.includes('salta') || cmd.includes('saltar') || cmd.includes('arriba')) {
+    dragonJump();
+    showCombo('↑ SALTA');
+  } else if(cmd.includes('calma') || cmd.includes('respira') || cmd.includes('paz')) {
+    openCalmMode();
+  } else if(cmd.includes('volar') || cmd.includes('vuela')) {
+    dragonJump();
+    setTimeout(dragonJump, 400);
+  } else if(cmd.includes('acción') || cmd.includes('nexo') || cmd.includes('pulso')) {
+    dragonAction();
+  } else if(cmd.includes('pausa') || cmd.includes('parar')) {
+    togglePause();
+  } else if(cmd.includes('cristal')) {
+    selectZone('crystal');
+  } else if(cmd.includes('estrella')) {
+    selectZone('star');
+  }
+}
+
+// ─── BREATH / CALM MODE ──────────────────────────────────
+let breathInterval = null;
+function openCalmMode() {
+  document.getElementById('breath-overlay').classList.add('on');
+  G.paused = true;
+  playSound('calm');
+
+  let phase = 0; // 0=inhala 1=retén 2=exhala
+  let count = 4;
+  const phases = [
+    { label:'INHALA', duration:4 },
+    { label:'RETÉN', duration:4 },
+    { label:'EXHALA', duration:6 }
+  ];
+  let phaseTime = phases[0].duration;
+
+  clearInterval(breathInterval);
+  document.getElementById('breath-count').textContent = phaseTime;
+  document.getElementById('breath-sub').textContent = phases[0].label;
+
+  breathInterval = setInterval(() => {
+    phaseTime--;
+    document.getElementById('breath-count').textContent = Math.max(0, phaseTime);
+    if(phaseTime <= 0) {
+      phase = (phase + 1) % 3;
+      phaseTime = phases[phase].duration;
+      document.getElementById('breath-sub').textContent = phases[phase].label;
+    }
+  }, 1000);
+}
+
+function closeCalmMode() {
+  document.getElementById('breath-overlay').classList.remove('on');
+  clearInterval(breathInterval);
+  G.paused = false;
+}
+
+// ─── NOTIFICATIONS & UI ─────────────────────────────────
+let notifTimer = null;
+function showNotif(msg) {
+  document.getElementById('notif-txt').textContent = msg;
+  document.getElementById('notif').classList.add('show');
+  clearTimeout(notifTimer);
+  notifTimer = setTimeout(() => document.getElementById('notif').classList.remove('show'), 3000);
+}
+
+let comboTimer2 = null;
+function showCombo(txt) {
+  const el = document.getElementById('combo-flash');
+  el.textContent = txt;
+  el.style.opacity = '1';
+  el.style.transform = 'translate(-50%,-50%) scale(1.3)';
+  clearTimeout(comboTimer2);
+  comboTimer2 = setTimeout(() => {
+    el.style.opacity = '0';
+    el.style.transform = 'translate(-50%,-50%) scale(1)';
+  }, 1000);
+}
+
+function updatePupsHUD() {
+  const container = document.getElementById('pups-hud');
+  container.innerHTML = '';
+  G.pups.forEach(p => {
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:3px';
+
+    const icon = document.createElement('div');
+    icon.className = 'pup-icon' + (p.id === G.currentDragon ? ' active' : '');
+    icon.style.background = p.id + '-pup' in getComputedStyle(document.documentElement) ?
+      getComputedStyle(document.documentElement).getPropertyValue('--' + p.id + '-pup') :
+      'rgba(124,58,237,.3)';
+    icon.textContent = p.emoji;
+    icon.title = p.name;
+    icon.onclick = () => { if(G.running) selectDragon(p.id); };
+    icon.style.cursor = 'pointer';
+    icon.style.pointerEvents = 'all';
+
+    const bar = document.createElement('div');
+    bar.className = 'pup-bar-wrap';
+    const fill = document.createElement('div');
+    fill.className = 'pup-bar';
+    fill.style.cssText = `width:${p.energy}%;background:${p.barColor}`;
+    bar.appendChild(fill);
+
+    wrapper.appendChild(icon);
+    wrapper.appendChild(bar);
+    container.appendChild(wrapper);
+  });
+}
+
+// ─── GAME FLOW ───────────────────────────────────────────
+function startGame() {
+  showScreen(null);
+  document.getElementById('hud').style.display = 'block';
+  document.getElementById('wasp-badge').style.display = 'block';
+  document.getElementById('minimap').style.display = 'block';
+  document.getElementById('compass').style.display = 'block';
+  document.getElementById('aura-bar').style.display = 'flex';
+  document.getElementById('a11y-bar').style.display = 'flex';
+  document.getElementById('input-log').style.display = 'block';
+
+  // Touch controls visibility
+  const isTouch = navigator.maxTouchPoints > 0;
+  document.getElementById('touch-left').style.display = isTouch ? 'block' : 'none';
+  document.getElementById('touch-right').style.display = isTouch ? 'flex' : 'none';
+
+  buildZone(G.currentZone);
+  initAudio();
+  if(G.audioCtx?.state === 'suspended') G.audioCtx.resume();
+  playTherapeuticMusic(G.currentZone);
+
+  G.running = true;
+  G.paused = false;
+  G.sessionStart = Date.now();
+  G.score = 0;
+  G.level = 1;
+  G.xp = 0;
+
+  updatePupsHUD();
+  G.mapCtx = document.getElementById('map-canvas').getContext('2d');
+
+  animate();
+}
+
+function resumeGame() {
+  G.paused = false;
+  document.getElementById('pause-menu').classList.remove('on');
+}
+
+function togglePause() {
+  if(!G.running) return;
+  G.paused = !G.paused;
+  document.getElementById('pause-menu').classList.toggle('on', G.paused);
+}
+
+function exitToMenu() {
+  G.running = false;
+  G.paused = false;
+  if(G.musicNode) { try{ G.musicNode.stop(); }catch(e){} }
+  if(G.bgAudio) { try{ G.bgAudio.pause(); G.bgAudio.currentTime=0; }catch(e){} }
+  document.getElementById('pause-menu').classList.remove('on');
+  document.getElementById('hud').style.display = 'none';
+  document.getElementById('wasp-badge').style.display = 'none';
+  document.getElementById('minimap').style.display = 'none';
+  document.getElementById('compass').style.display = 'none';
+  document.getElementById('aura-bar').style.display = 'none';
+  document.getElementById('touch-left').style.display = 'none';
+  document.getElementById('touch-right').style.display = 'none';
+  document.getElementById('a11y-bar').style.display = 'none';
+  document.getElementById('input-log').style.display = 'none';
+  if(G.voiceActive) stopVoice();
+  if(G.cameraActive) stopCamera();
+  showScreen('screen-start');
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+  if(id) document.getElementById(id)?.classList.remove('hidden');
+}
+
+function showZoneSelect() {
+  document.getElementById('pause-menu').classList.remove('on');
+  showScreen('screen-zone');
+}
+
+function showDragonSelect() {
+  showScreen('screen-dragon');
+}
+
+function selectZone(id) {
+  G.currentZone = id;
+  G.currentDragon = G.zones[id].dragon;
+  showScreen(null);
+  if(G.running) {
+    buildZone(id);
+    playTherapeuticMusic(id);
+  } else {
+    startGame();
+  }
+}
+
+function selectDragon(id) {
+  G.currentDragon = id;
+  showScreen(null);
+  if(G.running) {
+    // Swap dragon in current zone
+    buildDragon(id, G.zones[G.currentZone]);
+    updatePupsHUD();
+    showNotif('🐉 ' + G.pups.find(p=>p.id===id)?.name + ' Baby Pup activado!');
+  } else {
+    startGame();
+  }
+}
+
+// ─── SETTINGS ────────────────────────────────────────────
+function openSettings() {
+  document.getElementById('settings-panel').classList.add('on');
+  document.getElementById('pause-menu').classList.remove('on');
+}
+function closeSettings() {
+  document.getElementById('settings-panel').classList.remove('on');
+}
+
+function toggleSetting(key, el) {
+  G.settings[key] = !G.settings[key];
+  el.classList.toggle('on', G.settings[key]);
+  applySettings();
+}
+
+function toggleA11y(key) {
+  G.settings[key] = !G.settings[key];
+  document.getElementById('tog-' + key)?.classList.toggle('on', G.settings[key]);
+  applySettings();
+}
+
+function toggleCamera(el) {
+  if(G.cameraActive) { stopCamera(); el.classList.remove('on'); }
+  else { startCamera(); }
+}
+
+function toggleVoice(el) {
+  if(G.voiceActive) { stopVoice(); }
+  else { startVoice(); }
+}
+
+function updateVol(type, val) {
+  G.settings['vol' + type.charAt(0).toUpperCase() + type.slice(1)] = val / 100;
+  document.getElementById('vol-' + type + '-lbl').textContent = val;
+  if (type === 'music' && G.bgAudio) G.bgAudio.volume = Math.max(0.05, (val/100) * 0.55);
+}
+
+function setColorblind(mode) {
+  G.settings.colorblind = mode;
+  applySettings();
+}
+
+function applySettings() {
+  // High contrast
+  document.documentElement.style.setProperty('--nebula', G.settings.highContrast ? '#ffffff' : '#c084fc');
+  document.documentElement.style.setProperty('--muted', G.settings.highContrast ? '#cccccc' : '#9d8ec7');
+
+  // Photo-safe: limit renderer brightness
+  if(G.renderer) {
+    G.renderer.toneMappingExposure = G.settings.photoSafe ? 0.9 : 1.2;
+  }
+
+  // Colorblind filter (CSS)
+  const filters = {
+    none: '',
+    protanopia: 'url("data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'p\'><feColorMatrix type=\'matrix\' values=\'0.567 0.433 0 0 0 0.558 0.442 0 0 0 0 0.242 0.758 0 0 0 0 0 1 0\'/></filter></svg>#p")',
+    deuteranopia: 'url("data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'d\'><feColorMatrix type=\'matrix\' values=\'0.625 0.375 0 0 0 0.7 0.3 0 0 0 0 0.3 0.7 0 0 0 0 0 1 0\'/></filter></svg>#d")',
+    tritanopia: ''
+  };
+  document.getElementById('game-canvas').style.filter = filters[G.settings.colorblind] || '';
+}
+
+// ─── KEYBOARD CONTROLS ───────────────────────────────────
+window.addEventListener('keydown', e => {
+  G.keys[e.code] = true;
+  if(!G.running) return;
+  if(e.code === 'Escape' || e.code === 'KeyP') togglePause();
+  if(e.code === 'Space') { e.preventDefault(); if(G.dragon?.onGround) dragonJump(); }
+  if(e.code === 'KeyE') dragonAction();
+  if(e.code === 'KeyC') openCalmMode();
+  if(e.code === 'KeyM') { if(G.voiceActive) stopVoice(); else startVoice(); }
+
+  // Log inputs
+  const inputEl = document.getElementById('input-log');
+  if(inputEl) {
+    inputEl.textContent = '⌨ ' + e.code + (G.gamepadIndex >= 0 ? ' | 🎮 GP' : '') + (G.cameraActive ? ' | 📷' : '') + (G.voiceActive ? ' | 🎙' : '');
+  }
+});
+window.addEventListener('keyup', e => { G.keys[e.code] = false; });
+
+// ─── TOUCH JOYSTICK ─────────────────────────────────────
+(function initJoystick() {
+  const base = document.getElementById('jstick-base');
+  const knob = document.getElementById('jstick-knob');
+  if(!base || !knob) return;
+  let startX, startY, active = false;
+
+  function onStart(e) {
+    e.preventDefault();
+    active = true;
+    const t = e.touches ? e.touches[0] : e;
+    const rect = base.getBoundingClientRect();
+    startX = rect.left + rect.width/2;
+    startY = rect.top + rect.height/2;
+  }
+  function onMove(e) {
+    if(!active) return;
+    e.preventDefault();
+    const t = e.touches ? e.touches[0] : e;
+    const dx = Math.max(-44, Math.min(44, t.clientX - startX));
+    const dy = Math.max(-44, Math.min(44, t.clientY - startY));
+    knob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+    G.touch.jx = dx / 44;
+    G.touch.jy = dy / 44;
+  }
+  function onEnd(e) {
+    active = false;
+    knob.style.transform = 'translate(-50%, -50%)';
+    G.touch.jx = 0;
+    G.touch.jy = 0;
+  }
+
+  base.addEventListener('touchstart', onStart, { passive:false });
+  base.addEventListener('touchmove', onMove, { passive:false });
+  base.addEventListener('touchend', onEnd);
+  window.addEventListener('touchend', onEnd);
+})();
+
+// Touch action buttons
+document.getElementById('btn-jump')?.addEventListener('touchstart', e => {
+  e.preventDefault(); dragonJump();
+  document.getElementById('btn-jump').classList.add('pulse');
+  setTimeout(() => document.getElementById('btn-jump').classList.remove('pulse'), 400);
+}, { passive:false });
+document.getElementById('btn-action')?.addEventListener('touchstart', e => {
+  e.preventDefault(); dragonAction();
+}, { passive:false });
+document.getElementById('btn-calm')?.addEventListener('touchstart', e => {
+  e.preventDefault(); openCalmMode();
+}, { passive:false });
+document.getElementById('btn-cam-toggle')?.addEventListener('touchstart', e => {
+  e.preventDefault();
+  if(G.cameraActive) stopCamera();
+  else startCamera();
+}, { passive:false });
+
+// ─── LOADING SEQUENCE ────────────────────────────────────
+const tips = [
+  'Inicializando el Nexo...', 'Despertando a los Baby Pups...', 'Construyendo la Crystal Cave...',
+  'Sincronizando aura sensorial...', 'Calibrando protocolo de calma...', 'Activando modo epilepsy-safe...',
+  'Detectando gamepads...', '¡El Nexo está listo!'
+];
+
+async function loadGame() {
+  const bar = document.getElementById('load-bar');
+  const tip = document.getElementById('load-tip');
+
+  // Check gamepad
+  window.dispatchEvent(new Event('gamepadinput'));
+
+  for(let i = 0; i <= 100; i += 13) {
+    bar.style.width = i + '%';
+    tip.textContent = tips[Math.floor(i / 14)] || tips[tips.length-1];
+    await new Promise(r => setTimeout(r, 180));
+  }
+  bar.style.width = '100%';
+
+  // Init Three.js
+  initThree();
+
+  // Build a background preview scene
+  G.scene = new THREE.Scene();
+  G.scene.background = new THREE.Color(0x04020e);
+  const previewLight = new THREE.AmbientLight(0x7c3aed, 0.5);
+  G.scene.add(previewLight);
+  // Animate slowly
+  function previewLoop() {
+    if(G.running) return;
+    requestAnimationFrame(previewLoop);
+    G.camera.position.x = Math.sin(Date.now()*0.0003) * 3;
+    G.camera.lookAt(0,0,0);
+    G.renderer.render(G.scene, G.camera);
+  }
+  previewLoop();
+
+  await new Promise(r => setTimeout(r, 300));
+  document.getElementById('loading').classList.add('fade');
+  setTimeout(() => document.getElementById('loading').remove(), 900);
+  showScreen('screen-start');
+}
+
+loadGame();
+</script>
+</body>
+</html>
