@@ -9,7 +9,7 @@
   https://nuhu.vercel.app/
 </p>
 <p align="center">VIDEO
-  https://nuhu.vercel.app/](https://www.youtube.com/watch?v=n6I5_QIHZF4&t=8s)
+  h[ttps://nuhu.vercel.app/](https://www.youtube.com/watch?v=n6I5_QIHZF4&t=8s)](https://youtu.be/n6I5_QIHZF4?si=Wa9nN9jEB-p9EIuU)
 </p>
 <p align="center">
   <img src="https://raw.githubusercontent.com/lorenabravo-design/Final-AI-Cibersecurity-Projects-WomenCISO-Gen-4/main/assets/dragon-placeholder.gif" width="220" alt="Ñuhu Guardian Dragon Placeholder" />
