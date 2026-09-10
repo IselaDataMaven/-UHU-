@@ -125,3 +125,15 @@ Abre: **http://localhost:3000**
 
 WASD / flechas · Espacio · E · C (calma) · Pausa Esc  
 Mando Xbox/PS · Touch · Gestos de manos (cámara) · WebXR
+---
+
+## © Intellectual Property
+
+© 2026 Isela López. All rights reserved.
+
+ÑUHU, its name, logo, characters, narrative, artwork and original
+creative assets are protected intellectual property unless otherwise stated.
+
+See [COPYRIGHT.md](COPYRIGHT.md) for details.
+
+
