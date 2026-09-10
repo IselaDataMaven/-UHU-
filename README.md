@@ -1,5 +1,7 @@
 <div align="center">
+  <img width="500" height="500" alt="nuhu_logo" src="https://github.com/user-attachments/assets/29744538-4bbe-4df4-be05-fa0e7fea72ff" />
 
+<br>
 # 🐉 Ñ U H U &nbsp; R E S O N A N C E
 ### *“De la vulnerabilidad al acompañamiento.”*
 
